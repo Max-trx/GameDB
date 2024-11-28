@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">GameDB</string>
+    <string name="game_details">Game details</string>
+    <string name="back_button">Back button</string>
 </resources>
