@@ -1,15 +1,16 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    kotlin("plugin.serialization") version "1.9.10"
 }
 
 android {
-    namespace = "com.example.gamedb"
+    namespace = "com.example.gamedatabase"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.gamedb"
-        minSdk = 21
+        applicationId = "com.example.gamedatabase"
+        minSdk = 25
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -60,7 +61,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.ui.test.android)
+    implementation(libs.androidx.monitor)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -68,4 +69,29 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // Import the Compose BOM
+    implementation(libs.androidx.compose.bom.v20230800)
+    implementation(libs.androidx.activity.compose.v180)
+    implementation(libs.material3)
+    implementation(libs.ui)
+    implementation(libs.ui.tooling.preview)
+    implementation(libs.androidx.core.ktx.v1120)
+    implementation(libs.androidx.lifecycle.runtime.ktx.v262)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    // Retrofit
+    implementation(libs.retrofit2.kotlinx.serialization.converter)
+    implementation(libs.retrofit)
+    implementation(libs.coil.compose)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.androidx.ui.test.android)
+    implementation(libs.retrofit2.converter.gson)
+
+    //Http interceptor
+    implementation (libs.logging.interceptor)
+
+    debugImplementation(libs.ui.test.manifest)
+    debugImplementation(libs.ui.tooling)
+    implementation(kotlin("script-runtime"))
 }

@@ -1,5 +1,7 @@
 <resources>
-    <string name="app_name">GameDB</string>
-    <string name="game_details">Game details</string>
-    <string name="back_button">Back button</string>
+    <string name="app_name">Game DataBase</string>
+    <string name="loading_failed">Failed to load</string>
+    <string name="retry">Retry</string>
+    <string name="loading">Loading</string>
+    <string name="Rawg">Rawg DB</string>
 </resources>
