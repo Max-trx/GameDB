@@ -26,6 +26,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -35,7 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import coil.compose.AsyncImage
 import com.example.gamedatabase.R
-import com.example.gamedatabase.model.Games
+import com.example.gamedatabase.model.GamesInList
 import com.example.gamedatabase.ui.screens.GamesUiState
 
 
@@ -43,6 +44,7 @@ import com.example.gamedatabase.ui.screens.GamesUiState
 fun HomeScreen(
     gamesUiState: GamesUiState,
     retryAction: () -> Unit,
+    onLoadMore: () -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
@@ -51,7 +53,8 @@ fun HomeScreen(
         is GamesUiState.Success -> GamesListScreen(
             games = gamesUiState.games,
             contentPadding = contentPadding,
-            modifier = modifier
+            modifier = modifier,
+            onLoadMore = onLoadMore // Assurez-vous de passer onLoadMore ici
         )
         is GamesUiState.Error -> ErrorScreen(retryAction, modifier = modifier.fillMaxSize())
     }
@@ -93,7 +96,7 @@ fun ErrorScreen(retryAction: () -> Unit, modifier: Modifier = Modifier) {
 
 @Composable
 fun GamesGridScreen(
-    games: List<Games>,
+    games: List<GamesInList>,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
@@ -116,7 +119,7 @@ fun GamesGridScreen(
 
 
 @Composable
-fun GameCard(games: Games, modifier: Modifier = Modifier) {
+fun GameCard(games: GamesInList, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier,
         shape = MaterialTheme.shapes.medium,
@@ -144,27 +147,32 @@ fun GameCard(games: Games, modifier: Modifier = Modifier) {
 
 @Composable
 fun GamesListScreen(
-    games: List<Games>,
+    games: List<GamesInList>,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    onLoadMore: () -> Unit // Ajoutez un paramètre pour charger plus de jeux
 ) {
     LazyColumn(
         modifier = modifier.padding(horizontal = 8.dp),
         contentPadding = contentPadding,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(items = games, key = { games -> games.id }) { games ->
-            GameCardItem(
-                games = games,
-                modifier = Modifier
-                    .padding(vertical = 8.dp)
-                    .fillMaxWidth()
-            )
+        items(games) { game ->
+            GameCardItem(game)
+        }
+
+        // Ajoutez un item pour charger plus de jeux
+        item {
+            if (games.isNotEmpty()) {
+                // Appelez onLoadMore ici si vous voulez charger plus de jeux
+                onLoadMore()
+            }
         }
     }
 }
 
 @Composable
-fun GameCardItem(games: Games, modifier: Modifier = Modifier) {
+fun GameCardItem(games: GamesInList, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp), // Coins arrondis
@@ -197,5 +205,6 @@ fun GameCardItem(games: Games, modifier: Modifier = Modifier) {
         }
     }
 }
+
 
 

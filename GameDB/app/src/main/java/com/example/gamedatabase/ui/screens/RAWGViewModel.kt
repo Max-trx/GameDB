@@ -1,5 +1,6 @@
 package com.example.gamedatabase.ui.screens
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -11,13 +12,13 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.gamedatabase.RawgApplication
 import com.example.gamedatabase.data.GamesRepository
-import com.example.gamedatabase.model.Games
+import com.example.gamedatabase.model.GamesInList
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 
 sealed interface GamesUiState {
-    data class Success(val games: List<Games>) : GamesUiState
+    data class Success(val games: List<GamesInList>) : GamesUiState
     object Error : GamesUiState
     object Loading : GamesUiState
 }
@@ -26,21 +27,36 @@ class RAWGViewModel(private val gamesRepository: GamesRepository) : ViewModel() 
     var gamesUiState: GamesUiState by mutableStateOf(GamesUiState.Loading)
         private set
 
+    var currentPage = 1
+
     init {
-        getGames("3e0805133d704bd0b792f417960f423c") // Requête initiale
+        getGames(currentPage) // Requête initiale
     }
 
-    fun getGames(query: String) {
+    fun getGames(page: Int) {
         viewModelScope.launch {
-            gamesUiState = GamesUiState.Loading
-            gamesUiState = try {
-                GamesUiState.Success(gamesRepository.getGames(query))
+            try {
+                val newGames = gamesRepository.getGames("3e0805133d704bd0b792f417960f423c", page)
+                // Mettez à jour l'état avec les nouveaux jeux
+                if (gamesUiState is GamesUiState.Success) {
+                    val currentGames = (gamesUiState as GamesUiState.Success).games
+                    gamesUiState = GamesUiState.Success(currentGames + newGames)
+                    Log.d("debug", "gamesUiState is GamesUiState.Success")
+                } else {
+                    Log.d("debug", "gamesUiState is NOT GamesUiState.Success")
+                    gamesUiState = GamesUiState.Success(newGames)
+                }
             } catch (e: IOException) {
-                GamesUiState.Error
+                gamesUiState = GamesUiState.Error
             } catch (e: HttpException) {
-                GamesUiState.Error
+                gamesUiState = GamesUiState.Error
             }
         }
+    }
+
+    fun loadMoreGames() {
+        currentPage++
+        getGames(currentPage)
     }
 
     companion object {

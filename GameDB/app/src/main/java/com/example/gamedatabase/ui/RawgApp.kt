@@ -18,6 +18,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gamedatabase.R
+import com.example.gamedatabase.data.AppContainer
 import com.example.gamedatabase.ui.screens.RAWGViewModel
 import com.example.gamedb.HomeScreen
 
@@ -33,11 +34,12 @@ fun RawgApp() {
             modifier = Modifier.fillMaxSize(),
             color = Color.Black
         ) {
-            val rawgViewModel: RAWGViewModel =
-                viewModel(factory = RAWGViewModel.Factory)
+            // Utilisez le Factory pour créer le ViewModel
+            val rawgViewModel: RAWGViewModel = viewModel(factory = RAWGViewModel.Factory)
             HomeScreen(
                 gamesUiState = rawgViewModel.gamesUiState,
-                retryAction = { rawgViewModel.getGames("games?key=3e0805133d704bd0b792f417960f423c") },
+                retryAction = { rawgViewModel.getGames(rawgViewModel.currentPage) },
+                onLoadMore = { rawgViewModel.loadMoreGames() }, // Ajoutez cette ligne pour charger plus de jeux
                 contentPadding = it
             )
         }
@@ -45,6 +47,7 @@ fun RawgApp() {
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RawgTopAppBar(scrollBehavior: TopAppBarScrollBehavior, modifier: Modifier = Modifier) {
     CenterAlignedTopAppBar(
