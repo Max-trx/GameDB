@@ -1,6 +1,5 @@
 package com.example.gamedatabase.ui.screens
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -38,12 +37,16 @@ class CombinedViewModel(private val gamesRepository: GamesRepository) : ViewMode
         private set
 
     var currentPage = 1
+    private var isLoading = false // Empêche le double chargement
 
     init {
         getGames(currentPage) // Requête initiale
     }
 
     fun getGames(page: Int) {
+        if (isLoading) return // Empêche les appels multiples
+        isLoading = true
+
         viewModelScope.launch {
             try {
                 val newGames = gamesRepository.getGames("3e0805133d704bd0b792f417960f423c", page)
@@ -57,6 +60,8 @@ class CombinedViewModel(private val gamesRepository: GamesRepository) : ViewMode
                 gamesUiState = GamesUiState.Error
             } catch (e: HttpException) {
                 gamesUiState = GamesUiState.Error
+            } finally {
+                isLoading = false
             }
         }
     }

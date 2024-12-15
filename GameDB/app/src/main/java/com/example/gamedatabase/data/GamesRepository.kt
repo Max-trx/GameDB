@@ -3,7 +3,6 @@ package com.example.gamedatabase.data
 import com.example.gamedatabase.model.GameDetails
 import com.example.gamedatabase.model.GamesInList
 import com.example.gamedatabase.network.RAWGApiService
-import com.example.gamedatabase.network.RAWGGamesResponse
 
 interface GamesRepository {
     suspend fun getGames(query:String, page: Int): List<GamesInList>

@@ -7,16 +7,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -26,7 +23,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -45,6 +41,7 @@ fun HomeScreen(
     gamesUiState: GamesUiState,
     retryAction: () -> Unit,
     onLoadMore: () -> Unit,
+    onGameClick: (Int) -> Unit, // Nouveau paramètre
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
@@ -54,7 +51,8 @@ fun HomeScreen(
             games = gamesUiState.games,
             contentPadding = contentPadding,
             modifier = modifier,
-            onLoadMore = onLoadMore // Assurez-vous de passer onLoadMore ici
+            onLoadMore = onLoadMore,
+            onGameClick = onGameClick // Passez le gestionnaire de clics
         )
         is GamesUiState.Error -> ErrorScreen(retryAction, modifier = modifier.fillMaxSize())
     }
@@ -94,63 +92,14 @@ fun ErrorScreen(retryAction: () -> Unit, modifier: Modifier = Modifier) {
     }
 }
 
-@Composable
-fun GamesGridScreen(
-    games: List<GamesInList>,
-    modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
-) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = modifier.padding(horizontal = 4.dp),
-        contentPadding = contentPadding,
-    ) {
-        items(items = games, key = { games -> games.id }) { games ->
-            GameCard(
-                games = games,
-                modifier = modifier
-                    .padding(4.dp)
-                    .fillMaxWidth()
-                    .aspectRatio(1.5f)
-            )
-        }
-    }
-}
-
-
-@Composable
-fun GameCard(games: GamesInList, modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier,
-        shape = MaterialTheme.shapes.medium,
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-    ) {
-        Column {
-            AsyncImage(
-                model = games.background_image,
-                error = painterResource(R.drawable.ic_broken_image),
-                placeholder = painterResource(R.drawable.loading_img),
-                contentDescription = games.name,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp)
-            )
-            Text(
-                text = games.name,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(8.dp)
-            )
-        }
-    }
-}
 
 @Composable
 fun GamesListScreen(
     games: List<GamesInList>,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    onLoadMore: () -> Unit // Ajoutez un paramètre pour charger plus de jeux
+    onLoadMore: () -> Unit,
+    onGameClick: (Int) -> Unit
 ) {
     LazyColumn(
         modifier = modifier.padding(horizontal = 8.dp),
@@ -158,26 +107,32 @@ fun GamesListScreen(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(games) { game ->
-            GameCardItem(game)
+            GameCardItem(game, onClick = { onGameClick(game.id) })
         }
 
-        // Ajoutez un item pour charger plus de jeux
+        // Item sentinel pour charger plus de jeux
         item {
-            if (games.isNotEmpty()) {
-                // Appelez onLoadMore ici si vous voulez charger plus de jeux
+            LaunchedEffect(Unit) {
                 onLoadMore()
             }
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                strokeWidth = 4.dp
+            )
         }
     }
 }
 
+
 @Composable
-fun GameCardItem(games: GamesInList, modifier: Modifier = Modifier) {
+fun GameCardItem(games: GamesInList, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(12.dp), // Coins arrondis
+        modifier = modifier.clickable(onClick = onClick), // Gestion du clic
+        shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.DarkGray) // Fond sombre pour les cartes
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface) // Utilisation de la couleur des surfaces du thème
     ) {
         Column(
             modifier = Modifier.padding(8.dp),
@@ -192,11 +147,11 @@ fun GameCardItem(games: GamesInList, modifier: Modifier = Modifier) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
-                    .clip(RoundedCornerShape(8.dp)) // Coins arrondis pour l'image
+                    .clip(RoundedCornerShape(8.dp))
             )
             Text(
                 text = games.name,
-                style = MaterialTheme.typography.bodyLarge.copy(color = Color.White), // Texte en blanc
+                style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface), // Texte dynamique
                 modifier = Modifier
                     .padding(top = 8.dp)
                     .fillMaxWidth(),
@@ -205,6 +160,7 @@ fun GameCardItem(games: GamesInList, modifier: Modifier = Modifier) {
         }
     }
 }
+
 
 
 
