@@ -1,4 +1,4 @@
-package com.example.gamedb.ui.theme
+package com.example.gamedatabase.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

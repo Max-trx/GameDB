@@ -1,4 +1,4 @@
-package com.example.gamedb
+package com.example.gamedatabase.ui
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize

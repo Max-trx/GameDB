@@ -19,8 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gamedatabase.R
 import com.example.gamedatabase.data.AppContainer
-import com.example.gamedatabase.ui.screens.RAWGViewModel
-import com.example.gamedb.HomeScreen
+import com.example.gamedatabase.ui.screens.CombinedViewModel
 
 
 @Composable
@@ -35,7 +34,7 @@ fun RawgApp() {
             color = Color.Black
         ) {
             // Utilisez le Factory pour créer le ViewModel
-            val rawgViewModel: RAWGViewModel = viewModel(factory = RAWGViewModel.Factory)
+            val rawgViewModel: CombinedViewModel = viewModel(factory = CombinedViewModel.Factory)
             HomeScreen(
                 gamesUiState = rawgViewModel.gamesUiState,
                 retryAction = { rawgViewModel.getGames(rawgViewModel.currentPage) },

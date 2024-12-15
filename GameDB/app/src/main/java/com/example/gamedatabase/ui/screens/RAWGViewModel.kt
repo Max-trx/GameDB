@@ -10,9 +10,10 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.gamedatabase.RawgApplication
 import com.example.gamedatabase.data.GamesRepository
+import com.example.gamedatabase.model.GameDetails
 import com.example.gamedatabase.model.GamesInList
+import com.example.gamedatabase.RawgApplication
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
@@ -23,8 +24,17 @@ sealed interface GamesUiState {
     object Loading : GamesUiState
 }
 
-class RAWGViewModel(private val gamesRepository: GamesRepository) : ViewModel() {
+sealed interface GameDetailsUiState {
+    data class Success(val gameDetails: GameDetails) : GameDetailsUiState
+    object Error : GameDetailsUiState
+    object Loading : GameDetailsUiState
+}
+
+class CombinedViewModel(private val gamesRepository: GamesRepository) : ViewModel() {
     var gamesUiState: GamesUiState by mutableStateOf(GamesUiState.Loading)
+        private set
+
+    var gameDetailsUiState: GameDetailsUiState by mutableStateOf(GameDetailsUiState.Loading)
         private set
 
     var currentPage = 1
@@ -37,13 +47,10 @@ class RAWGViewModel(private val gamesRepository: GamesRepository) : ViewModel() 
         viewModelScope.launch {
             try {
                 val newGames = gamesRepository.getGames("3e0805133d704bd0b792f417960f423c", page)
-                // Mettez à jour l'état avec les nouveaux jeux
                 if (gamesUiState is GamesUiState.Success) {
                     val currentGames = (gamesUiState as GamesUiState.Success).games
                     gamesUiState = GamesUiState.Success(currentGames + newGames)
-                    Log.d("debug", "gamesUiState is GamesUiState.Success")
                 } else {
-                    Log.d("debug", "gamesUiState is NOT GamesUiState.Success")
                     gamesUiState = GamesUiState.Success(newGames)
                 }
             } catch (e: IOException) {
@@ -59,12 +66,25 @@ class RAWGViewModel(private val gamesRepository: GamesRepository) : ViewModel() 
         getGames(currentPage)
     }
 
+    fun getGameDetails(gameId: Int) {
+        viewModelScope.launch {
+            try {
+                val gameDetails = gamesRepository.getGameDetails(gameId, "3e0805133d704bd0b792f417960f423c")
+                gameDetailsUiState = GameDetailsUiState.Success(gameDetails)
+            } catch (e: IOException) {
+                gameDetailsUiState = GameDetailsUiState.Error
+            } catch (e: HttpException) {
+                gameDetailsUiState = GameDetailsUiState.Error
+            }
+        }
+    }
+
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val application = (this[APPLICATION_KEY] as RawgApplication)
                 val gamesRepository = application.container.gamesRepository
-                RAWGViewModel(gamesRepository = gamesRepository)
+                CombinedViewModel(gamesRepository = gamesRepository)
             }
         }
     }
