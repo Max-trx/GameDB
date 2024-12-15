@@ -10,6 +10,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -20,16 +21,22 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.gamedatabase.R
 import com.example.gamedatabase.model.GamesInList
@@ -135,8 +142,7 @@ fun GameCardItem(games: GamesInList, modifier: Modifier = Modifier, onClick: () 
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface) // Utilisation de la couleur des surfaces du thème
     ) {
         Column(
-            modifier = Modifier.padding(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.padding(8.dp)
         ) {
             AsyncImage(
                 model = games.background_image,
@@ -146,20 +152,86 @@ fun GameCardItem(games: GamesInList, modifier: Modifier = Modifier, onClick: () 
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
+                    .height(250.dp)
                     .clip(RoundedCornerShape(8.dp))
             )
             Text(
                 text = games.name,
-                style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface), // Texte dynamique
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    shadow = Shadow(
+                        color = Color.Black,
+                        offset = Offset(2f, 2f),
+                        blurRadius = 4f
+                    )
+                ),
                 modifier = Modifier
                     .padding(top = 8.dp)
                     .fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.calendar),
+                    contentDescription = "Date de sortie",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    text = games.released.toString(),
+                    style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .weight(1f)
+                )
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = (games.metacritic.toString()+"/100"),
+                        style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.primary),
+                        textAlign = TextAlign.End
+                    )
+                    Icon(
+                        painter = painterResource(R.drawable.star),
+                        contentDescription = "Note Metacritic",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .size(20.dp)
+                            .padding(start = 8.dp)
+                    )
+                }
+            }
         }
     }
 }
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun PreviewHomeScreen() {
+    val sampleGames = listOf(
+        GamesInList(id = 1, name = "Game 1", background_image = "https://media.rawg.io/media/games/618/618c2031a07bbff6b4f611f10b6bcdbc.jpg"),
+        GamesInList(id = 2, name = "Game 2", background_image = "url_to_image_2"),
+        GamesInList(id = 3, name = "Game 3", background_image = "url_to_image_3")
+    )
+
+    val gamesUiState = GamesUiState.Success(games = sampleGames)
+
+    HomeScreen(
+        gamesUiState = gamesUiState,
+        retryAction = {},
+        onLoadMore = {},
+        onGameClick = {}
+    )
+}
+
 
 
 
