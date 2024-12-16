@@ -21,10 +21,19 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
@@ -43,27 +52,45 @@ import com.example.gamedatabase.model.GamesInList
 import com.example.gamedatabase.ui.screens.GamesUiState
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     gamesUiState: GamesUiState,
     retryAction: () -> Unit,
     onLoadMore: () -> Unit,
-    onGameClick: (Int) -> Unit, // Nouveau paramètre
+    onGameClick: (Int) -> Unit,
+    onSearch: (String) -> Unit, // Ajout du paramètre pour la recherche
+    onTitleClick: () -> Unit,  // Navigue vers l'écran d'accueil
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
-    when (gamesUiState) {
-        is GamesUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
-        is GamesUiState.Success -> GamesListScreen(
-            games = gamesUiState.games,
-            contentPadding = contentPadding,
-            modifier = modifier,
-            onLoadMore = onLoadMore,
-            onGameClick = onGameClick // Passez le gestionnaire de clics
+    Column {
+        // Affiche le titre de l'application
+        RawgTopAppBar(
+            scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
+            onTitleClick = onTitleClick // Clic renvoie à l'accueil
         )
-        is GamesUiState.Error -> ErrorScreen(retryAction, modifier = modifier.fillMaxSize())
+
+        // Affiche la barre de recherche
+        SearchBar(onSearch = onSearch)
+
+        // Affiche le contenu en fonction de l'état
+        when (gamesUiState) {
+            is GamesUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
+            is GamesUiState.Success -> GamesListScreen(
+                games = gamesUiState.games,
+                contentPadding = contentPadding,
+                modifier = modifier,
+                onLoadMore = onLoadMore,
+                onGameClick = onGameClick
+            )
+            is GamesUiState.Error -> ErrorScreen(retryAction, modifier = modifier.fillMaxSize())
+        }
     }
 }
+
+
+
 
 
 
@@ -99,6 +126,35 @@ fun ErrorScreen(retryAction: () -> Unit, modifier: Modifier = Modifier) {
     }
 }
 
+@Composable
+fun SearchBar(onSearch: (String) -> Unit, modifier: Modifier = Modifier) {
+    var searchText by remember { mutableStateOf("") }
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        TextField(
+            value = searchText,
+            onValueChange = { searchText = it },
+            placeholder = { Text("Search...") },
+            modifier = Modifier
+                .weight(1f)
+                .padding(end = 8.dp)
+        )
+        Button(
+            onClick = { onSearch(searchText) }, // Passe le texte à la fonction de recherche
+            modifier = Modifier.height(56.dp)
+        ) {
+            Text("Search")
+        }
+    }
+}
+
+
 
 @Composable
 fun GamesListScreen(
@@ -110,7 +166,7 @@ fun GamesListScreen(
 ) {
     LazyColumn(
         modifier = modifier.padding(horizontal = 8.dp),
-        contentPadding = contentPadding,
+        contentPadding = PaddingValues(0.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(games) { game ->
@@ -213,24 +269,30 @@ fun GameCardItem(games: GamesInList, modifier: Modifier = Modifier, onClick: () 
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
+@Preview(showBackground = true)
 @Composable
-fun PreviewHomeScreen() {
-    val sampleGames = listOf(
-        GamesInList(id = 1, name = "Game 1", background_image = "https://media.rawg.io/media/games/618/618c2031a07bbff6b4f611f10b6bcdbc.jpg"),
-        GamesInList(id = 2, name = "Game 2", background_image = "url_to_image_2"),
-        GamesInList(id = 3, name = "Game 3", background_image = "url_to_image_3")
+fun HomeScreenPreview() {
+    // On crée une version simplifiée de l'état des jeux pour prévisualisation
+    val mockGamesUiState = GamesUiState.Success(
+        games = listOf(
+            GamesInList(id = 1, name = "Game 1", background_image = "https://example.com/image1.jpg"),
+            GamesInList(id = 2, name = "Game 2", background_image = "https://example.com/image2.jpg"),
+            GamesInList(id = 3, name = "Game 3", background_image = "https://example.com/image3.jpg")
+        )
     )
-
-    val gamesUiState = GamesUiState.Success(games = sampleGames)
 
     HomeScreen(
-        gamesUiState = gamesUiState,
+        gamesUiState = mockGamesUiState,
         retryAction = {},
         onLoadMore = {},
-        onGameClick = {}
+        onGameClick = {},
+        onSearch = {},
+        onTitleClick = {},
+        modifier = Modifier.fillMaxSize()
     )
 }
+
+
 
 
 

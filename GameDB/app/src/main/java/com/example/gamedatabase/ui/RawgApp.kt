@@ -2,23 +2,39 @@
 
 package com.example.gamedatabase.ui
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -31,14 +47,17 @@ import com.example.gamedatabase.ui.screens.GameDetailsScreen
 @Composable
 fun RawgApp() {
     val navController = rememberNavController()
+    val rawgViewModel: CombinedViewModel = viewModel(factory = CombinedViewModel.Factory)
+
     NavHost(navController = navController, startDestination = "home") {
+        // Home screen
         composable("home") {
-            val rawgViewModel: CombinedViewModel = viewModel(factory = CombinedViewModel.Factory)
             Scaffold(
+                // Titre et barre de recherche pour l'accueil
                 topBar = {
                     RawgTopAppBar(
                         scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
-                        showBackButton = false // Pas de bouton retour sur la page d'accueil
+                        onTitleClick = { navController.popBackStack("home", inclusive = false) }
                     )
                 }
             ) { innerPadding ->
@@ -49,18 +68,24 @@ fun RawgApp() {
                     onGameClick = { gameId ->
                         navController.navigate("gameDetails/$gameId")
                     },
-                    modifier = Modifier.padding(innerPadding)
+                    onSearch = { query -> rawgViewModel.searchGames(query) },
+                    onTitleClick = { navController.navigate("home") }, // Ajout de onTitleClick
+                    contentPadding = innerPadding
                 )
             }
         }
+
+        // Game details screen
         composable("gameDetails/{gameId}") { backStackEntry ->
             val gameId = backStackEntry.arguments?.getString("gameId")?.toInt() ?: 0
             Scaffold(
+                // Seulement le titre et la flèche retour
                 topBar = {
                     RawgTopAppBar(
                         scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
-                        showBackButton = true, // Affiche le bouton retour
-                        onBackClick = { navController.popBackStack() } // Navigue en arrière
+                        showBackButton = true,
+                        onBackClick = { navController.popBackStack() },
+                        onTitleClick = { navController.navigate("home") }
                     )
                 }
             ) { innerPadding ->
@@ -73,23 +98,21 @@ fun RawgApp() {
     }
 }
 
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RawgTopAppBar(
     scrollBehavior: TopAppBarScrollBehavior,
     modifier: Modifier = Modifier,
-    showBackButton: Boolean = false, // Paramètre pour afficher la flèche
-    onBackClick: (() -> Unit)? = null // Action de retour
+    showBackButton: Boolean = false,
+    onBackClick: (() -> Unit)? = null,
+    onTitleClick: (() -> Unit)? = null
 ) {
-    CenterAlignedTopAppBar(
-        scrollBehavior = scrollBehavior,
+    TopAppBar(
         navigationIcon = {
-            if (showBackButton) { // Affiche la flèche si nécessaire
+            if (showBackButton) {
                 IconButton(onClick = { onBackClick?.invoke() }) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack, // Icône de retour
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = stringResource(R.string.back),
                         tint = Color.White
                     )
@@ -97,17 +120,39 @@ fun RawgTopAppBar(
             }
         },
         title = {
-            Text(
-                text = stringResource(R.string.app_name),
-                style = MaterialTheme.typography.headlineSmall.copy(color = Color.White),
-            )
+            Box(
+                modifier = Modifier.fillMaxWidth(), // Utilise un Box pour occuper toute la largeur
+                contentAlignment = Alignment.Center // Centre le contenu dans le Box
+            ) {
+                Text(
+                    text = "Game DataBase",
+                    color = Color.White,
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.clickable { onTitleClick?.invoke() }
+                )
+            }
         },
-        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = Color.Black
-        ),
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black),
+        scrollBehavior = scrollBehavior,
         modifier = modifier
     )
 }
+
+@Preview(showBackground = true)
+@Composable
+fun RawgTopAppBarPreview() {
+    RawgTopAppBar(
+        scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
+        showBackButton = true,
+        onBackClick = { /* Action back */ },
+        onTitleClick = { /* Action on title click */ }
+    )
+}
+
+
+
+
+
 
 
 

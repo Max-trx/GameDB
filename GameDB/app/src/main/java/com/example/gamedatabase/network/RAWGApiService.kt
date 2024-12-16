@@ -15,6 +15,9 @@ interface RAWGApiService {
     //https://api.rawg.io/api/games/3328?key=3e0805133d704bd0b792f417960f423c
     @GET("games/{id}")
     suspend fun getGameDetails(@Path("id") gameId: Int, @Query("key") apiKey: String): GameDetails
+
+    @GET("games")
+    suspend fun getGameSearch(@Query("key") key: String, @Query("search") query: String): RAWGGamesResponse
 }
 
 @Serializable

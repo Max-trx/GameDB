@@ -84,6 +84,26 @@ class CombinedViewModel(private val gamesRepository: GamesRepository) : ViewMode
         }
     }
 
+    fun searchGames(query: String) {
+        if (isLoading) return
+        isLoading = true
+
+        viewModelScope.launch {
+            try {
+                val searchResults = gamesRepository.getGameSearch("3e0805133d704bd0b792f417960f423c", query) // Page 1 pour une recherche
+                gamesUiState = GamesUiState.Success(searchResults)
+            } catch (e: IOException) {
+                gamesUiState = GamesUiState.Error
+            } catch (e: HttpException) {
+                gamesUiState = GamesUiState.Error
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+
+
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
