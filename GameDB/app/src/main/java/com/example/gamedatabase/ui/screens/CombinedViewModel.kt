@@ -1,5 +1,6 @@
 package com.example.gamedatabase.ui.screens
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -113,7 +114,7 @@ class CombinedViewModel(private val gamesRepository: GamesRepository) : ViewMode
 //            }
 //        }
 //    }
-fun searchGames(query: String, selectedPlatforms: List<Int>) {
+fun searchGames(query: String, selectedPlatforms: List<Int>, selectedGenres: List<String>) {
     if (isLoading) return
     isLoading = true
 
@@ -125,24 +126,47 @@ fun searchGames(query: String, selectedPlatforms: List<Int>) {
                 null
             }
 
+            val genresQuery = if (selectedGenres.isNotEmpty()) {
+                selectedGenres.joinToString(",").lowercase() // Convertir la liste d'IDs en chaîne, séparée par des virgules
+            } else {
+                null
+            }
+            val apiKey = "3e0805133d704bd0b792f417960f423c"
             val searchResults = when {
-                query.isNotEmpty() && platformQuery != null -> {
-                    // Utiliser getGameSearchFilter si les deux sont fournis
-                    gamesRepository.getGameSearchFilter("3e0805133d704bd0b792f417960f423c", query, platformQuery)
+                // query + platform + genre
+                query.isNotEmpty() && platformQuery != null && genresQuery != null-> {
+                    gamesRepository.getGameSearchPlatformGenre(apiKey, query, platformQuery, genresQuery)
                 }
+                // query + platform
+                query.isNotEmpty() && platformQuery != null ->{
+                    gamesRepository.getGameSearchPlatform(apiKey, query, platformQuery)
+                }
+                // platform + genre
+                platformQuery != null && genresQuery != null->{
+                    gamesRepository.getGameSearchGenre(apiKey, platformQuery, genresQuery)
+                }
+                // Only query
                 query.isNotEmpty() -> {
                     // Utiliser getGameSearch si seule la requête de recherche est fournie
-                    gamesRepository.getGameSearch("3e0805133d704bd0b792f417960f423c", query)
+                    gamesRepository.getGameSearch(apiKey, query)
                 }
+                // Only platform
                 platformQuery != null -> {
                     // Utiliser getGameFilter si seule la plateforme est fournie
-                    gamesRepository.getGameFilter("3e0805133d704bd0b792f417960f423c", platformQuery)
+                    gamesRepository.getGamePlatform(apiKey, platformQuery)
                 }
+                // Only genres
+                genresQuery != null -> {
+                    // Utiliser getGameFilter si seule la plateforme est fournie
+                    gamesRepository.getGameGenre(apiKey, genresQuery)
+                }
+                // Any
                 else -> {
-                    gamesRepository.getGames("3e0805133d704bd0b792f417960f423c",1)
+                    gamesRepository.getGames(apiKey,1)
                 }
-            }
 
+            }
+            Log.d("debug", "query =$query, platform= $platformQuery, genres= $genresQuery")
             gamesUiState = GamesUiState.Success(searchResults)
         } catch (e: IOException) {
             gamesUiState = GamesUiState.Error

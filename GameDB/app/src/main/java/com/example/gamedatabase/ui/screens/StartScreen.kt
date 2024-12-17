@@ -11,25 +11,25 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBarDefaults
@@ -49,7 +49,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.gamedatabase.R
@@ -100,7 +99,7 @@ fun HomeScreen(
     retryAction: () -> Unit,
     onLoadMore: () -> Unit,
     onGameClick: (Int) -> Unit,
-    onSearch: (String, List<Int>) -> Unit, // Modifié pour inclure les plateformes
+    onSearch: (String, List<Int>, List<String>) -> Unit, // Modifié pour inclure les plateformes
     onTitleClick: () -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
@@ -190,13 +189,33 @@ fun SearchBar(onSearch: (String) -> Unit, modifier: Modifier = Modifier) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchBarWithFilters(onSearch: (String, List<Int>) -> Unit, modifier: Modifier = Modifier) {
+fun SearchBarWithFilters(
+    onSearch: (String, List<Int>, List<String>) -> Unit,
+    modifier: Modifier = Modifier
+) {
     var searchText by remember { mutableStateOf("") }
-    val selectedPlatforms = remember { mutableStateListOf<Int>() }
-    var showFilters by remember { mutableStateOf(false) } // État pour contrôler la visibilité des filtres
+
+    // États pour les plateformes et genres
+    var selectedPlatform by remember { mutableStateOf<Int?>(null) }
+    val selectedGenres = remember { mutableStateListOf<String>() }
+
+    var expandedPlatform by remember { mutableStateOf(false) }
+    var expandedGenres by remember { mutableStateOf(false) }
+
+    // Données des plateformes et genres
+    val platforms = listOf(
+        "PC" to 4,
+        "PlayStation 5" to 187,
+        "Xbox One" to 1,
+        "Nintendo Switch" to 7
+    )
+
+    val genres = listOf("Action", "Adventure", "RPG", "Shooter", "Puzzle", "Strategy", "Sports", "Racing")
 
     Column(modifier = modifier.padding(8.dp)) {
+        // Barre de recherche principale et bouton de recherche
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -211,49 +230,109 @@ fun SearchBarWithFilters(onSearch: (String, List<Int>) -> Unit, modifier: Modifi
                     .padding(end = 8.dp)
             )
             Button(
-                onClick = { onSearch(searchText, selectedPlatforms) },
+                onClick = {
+                    val platformList = selectedPlatform?.let { listOf(it) } ?: emptyList()
+                    val genreList = selectedGenres
+                    onSearch(searchText, platformList, genreList)
+                },
                 modifier = Modifier.height(56.dp)
             ) {
                 Text("Search")
             }
         }
 
-        // Flèche pour afficher/masquer les filtres
-        IconButton(onClick = { showFilters = !showFilters }) {
-            Icon(
-                imageVector = Icons.Default.ArrowDropDown,
-                contentDescription = "Toggle Filters"
-            )
-        }
-
-        // Afficher les filtres si showFilters est vrai
-        if (showFilters) {
-            Column {
-                val platforms = listOf(
-                    "PC" to 4,
-                    "PlayStation 5" to 187,
-                    "Xbox One" to 1,
-                    "Nintendo Switch" to 7
+        // Menu déroulant pour plateformes et genres sur la même ligne
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Menu déroulant pour les plateformes
+            ExposedDropdownMenuBox(
+                expanded = expandedPlatform,
+                onExpandedChange = { expandedPlatform = it }
+            ) {
+                TextField(
+                    value = platforms.firstOrNull { it.second == selectedPlatform }?.first ?: "Select Platform",
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedPlatform) },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .width(190.dp) // Ajuste la largeur
                 )
-                platforms.forEach { (platformName, platformId) ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = selectedPlatforms.contains(platformId),
-                            onCheckedChange = { checked ->
-                                if (checked) {
-                                    selectedPlatforms.add(platformId)
+
+                ExposedDropdownMenu(
+                    expanded = expandedPlatform,
+                    onDismissRequest = { expandedPlatform = false }
+                ) {
+                    platforms.forEach { (platformName, platformId) ->
+                        DropdownMenuItem(
+                            text = { Text(platformName) },
+                            onClick = {
+                                selectedPlatform = platformId
+                                expandedPlatform = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.width(8.dp)) // Espacement entre les deux menus
+
+            // Menu déroulant pour les genres
+            ExposedDropdownMenuBox(
+                expanded = expandedGenres,
+                onExpandedChange = { expandedGenres = it }
+            ) {
+                TextField(
+                    value = "Select Genres",
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedGenres) },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .weight(0.5f) // Ajuste la largeur
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expandedGenres,
+                    onDismissRequest = { expandedGenres = false }
+                ) {
+                    genres.forEach { genre ->
+                        DropdownMenuItem(
+                            text = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Checkbox(
+                                        checked = selectedGenres.contains(genre),
+                                        onCheckedChange = null
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(genre)
+                                }
+                            },
+                            onClick = {
+                                if (selectedGenres.contains(genre)) {
+                                    selectedGenres.remove(genre)
                                 } else {
-                                    selectedPlatforms.remove(platformId)
+                                    selectedGenres.add(genre)
                                 }
                             }
                         )
-                        Text(text = platformName)
                     }
                 }
             }
         }
     }
 }
+
+
+
+
 
 
 
