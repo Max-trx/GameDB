@@ -84,6 +84,18 @@ class CombinedViewModel(private val gamesRepository: GamesRepository) : ViewMode
         }
     }
 
+    // Méthode pour charger les jeux d'origine
+    fun loadOriginalGames() {
+        viewModelScope.launch {
+            try {
+                val originalGames = gamesRepository.getGames("3e0805133d704bd0b792f417960f423c", 1)
+                gamesUiState = GamesUiState.Success(originalGames)
+            } catch (e: Exception) {
+                gamesUiState = GamesUiState.Error
+            }
+        }
+    }
+
 //    fun searchGames(query: String) {
 //        if (isLoading) return
 //        isLoading = true

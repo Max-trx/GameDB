@@ -57,7 +57,10 @@ fun RawgApp() {
                 topBar = {
                     RawgTopAppBar(
                         scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
-                        onTitleClick = { navController.popBackStack("home", inclusive = false) }
+                        onTitleClick = {
+                            rawgViewModel.loadOriginalGames() // Charger les jeux d'origine
+                            navController.popBackStack("home", inclusive = false) // Naviguer vers l'accueil
+                        }
                     )
                 }
             ) { innerPadding ->

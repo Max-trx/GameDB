@@ -108,7 +108,7 @@ fun HomeScreen(
     Column {
         RawgTopAppBar(
             scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
-            onTitleClick = onTitleClick
+            onTitleClick = { onTitleClick() }
         )
 
         // Remplacez l'ancienne barre de recherche par la nouvelle
@@ -128,10 +128,6 @@ fun HomeScreen(
         }
     }
 }
-
-
-
-
 
 
 /**
@@ -210,7 +206,9 @@ fun SearchBarWithFilters(onSearch: (String, List<Int>) -> Unit, modifier: Modifi
                 value = searchText,
                 onValueChange = { searchText = it },
                 placeholder = { Text("Search...") },
-                modifier = Modifier.weight(1f).padding(end = 8.dp)
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 8.dp)
             )
             Button(
                 onClick = { onSearch(searchText, selectedPlatforms) },
