@@ -84,23 +84,64 @@ class CombinedViewModel(private val gamesRepository: GamesRepository) : ViewMode
         }
     }
 
-    fun searchGames(query: String) {
-        if (isLoading) return
-        isLoading = true
+//    fun searchGames(query: String) {
+//        if (isLoading) return
+//        isLoading = true
+//
+//        viewModelScope.launch {
+//            try {
+//                val searchResults = gamesRepository.getGameSearch("3e0805133d704bd0b792f417960f423c", query) // Page 1 pour une recherche
+//                gamesUiState = GamesUiState.Success(searchResults)
+//            } catch (e: IOException) {
+//                gamesUiState = GamesUiState.Error
+//            } catch (e: HttpException) {
+//                gamesUiState = GamesUiState.Error
+//            } finally {
+//                isLoading = false
+//            }
+//        }
+//    }
+fun searchGames(query: String, selectedPlatforms: List<Int>) {
+    if (isLoading) return
+    isLoading = true
 
-        viewModelScope.launch {
-            try {
-                val searchResults = gamesRepository.getGameSearch("3e0805133d704bd0b792f417960f423c", query) // Page 1 pour une recherche
-                gamesUiState = GamesUiState.Success(searchResults)
-            } catch (e: IOException) {
-                gamesUiState = GamesUiState.Error
-            } catch (e: HttpException) {
-                gamesUiState = GamesUiState.Error
-            } finally {
-                isLoading = false
+    viewModelScope.launch {
+        try {
+            val platformQuery = if (selectedPlatforms.isNotEmpty()) {
+                selectedPlatforms.joinToString("&") // Convertir la liste d'IDs en chaîne, séparée par des virgules
+            } else {
+                null
             }
+
+            val searchResults = when {
+                query.isNotEmpty() && platformQuery != null -> {
+                    // Utiliser getGameSearchFilter si les deux sont fournis
+                    gamesRepository.getGameSearchFilter("3e0805133d704bd0b792f417960f423c", query, platformQuery)
+                }
+                query.isNotEmpty() -> {
+                    // Utiliser getGameSearch si seule la requête de recherche est fournie
+                    gamesRepository.getGameSearch("3e0805133d704bd0b792f417960f423c", query)
+                }
+                platformQuery != null -> {
+                    // Utiliser getGameFilter si seule la plateforme est fournie
+                    gamesRepository.getGameFilter("3e0805133d704bd0b792f417960f423c", platformQuery)
+                }
+                else -> {
+                    gamesRepository.getGames("3e0805133d704bd0b792f417960f423c",1)
+                }
+            }
+
+            gamesUiState = GamesUiState.Success(searchResults)
+        } catch (e: IOException) {
+            gamesUiState = GamesUiState.Error
+        } catch (e: HttpException) {
+            gamesUiState = GamesUiState.Error
+        } finally {
+            isLoading = false
         }
     }
+}
+
 
 
 

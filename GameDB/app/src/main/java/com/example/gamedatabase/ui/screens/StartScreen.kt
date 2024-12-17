@@ -17,12 +17,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
@@ -31,6 +35,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -52,6 +57,42 @@ import com.example.gamedatabase.model.GamesInList
 import com.example.gamedatabase.ui.screens.GamesUiState
 
 
+//@OptIn(ExperimentalMaterial3Api::class)
+//@Composable
+//fun HomeScreen(
+//    gamesUiState: GamesUiState,
+//    retryAction: () -> Unit,
+//    onLoadMore: () -> Unit,
+//    onGameClick: (Int) -> Unit,
+//    onSearch: (String) -> Unit, // Ajout du paramètre pour la recherche
+//    onTitleClick: () -> Unit,  // Navigue vers l'écran d'accueil
+//    modifier: Modifier = Modifier,
+//    contentPadding: PaddingValues = PaddingValues(0.dp),
+//) {
+//    Column {
+//        // Affiche le titre de l'application
+//        RawgTopAppBar(
+//            scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
+//            onTitleClick = onTitleClick // Clic renvoie à l'accueil
+//        )
+//
+//        // Affiche la barre de recherche
+//        SearchBar(onSearch = onSearch)
+//
+//        // Affiche le contenu en fonction de l'état
+//        when (gamesUiState) {
+//            is GamesUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
+//            is GamesUiState.Success -> GamesListScreen(
+//                games = gamesUiState.games,
+//                contentPadding = contentPadding,
+//                modifier = modifier,
+//                onLoadMore = onLoadMore,
+//                onGameClick = onGameClick
+//            )
+//            is GamesUiState.Error -> ErrorScreen(retryAction, modifier = modifier.fillMaxSize())
+//        }
+//    }
+//}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -59,20 +100,19 @@ fun HomeScreen(
     retryAction: () -> Unit,
     onLoadMore: () -> Unit,
     onGameClick: (Int) -> Unit,
-    onSearch: (String) -> Unit, // Ajout du paramètre pour la recherche
-    onTitleClick: () -> Unit,  // Navigue vers l'écran d'accueil
+    onSearch: (String, List<Int>) -> Unit, // Modifié pour inclure les plateformes
+    onTitleClick: () -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     Column {
-        // Affiche le titre de l'application
         RawgTopAppBar(
             scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
-            onTitleClick = onTitleClick // Clic renvoie à l'accueil
+            onTitleClick = onTitleClick
         )
 
-        // Affiche la barre de recherche
-        SearchBar(onSearch = onSearch)
+        // Remplacez l'ancienne barre de recherche par la nouvelle
+        SearchBarWithFilters(onSearch = onSearch)
 
         // Affiche le contenu en fonction de l'état
         when (gamesUiState) {
@@ -150,6 +190,69 @@ fun SearchBar(onSearch: (String) -> Unit, modifier: Modifier = Modifier) {
             modifier = Modifier.height(56.dp)
         ) {
             Text("Search")
+        }
+    }
+}
+
+@Composable
+fun SearchBarWithFilters(onSearch: (String, List<Int>) -> Unit, modifier: Modifier = Modifier) {
+    var searchText by remember { mutableStateOf("") }
+    val selectedPlatforms = remember { mutableStateListOf<Int>() }
+    var showFilters by remember { mutableStateOf(false) } // État pour contrôler la visibilité des filtres
+
+    Column(modifier = modifier.padding(8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            TextField(
+                value = searchText,
+                onValueChange = { searchText = it },
+                placeholder = { Text("Search...") },
+                modifier = Modifier.weight(1f).padding(end = 8.dp)
+            )
+            Button(
+                onClick = { onSearch(searchText, selectedPlatforms) },
+                modifier = Modifier.height(56.dp)
+            ) {
+                Text("Search")
+            }
+        }
+
+        // Flèche pour afficher/masquer les filtres
+        IconButton(onClick = { showFilters = !showFilters }) {
+            Icon(
+                imageVector = Icons.Default.ArrowDropDown,
+                contentDescription = "Toggle Filters"
+            )
+        }
+
+        // Afficher les filtres si showFilters est vrai
+        if (showFilters) {
+            Column {
+                val platforms = listOf(
+                    "PC" to 4,
+                    "PlayStation 5" to 187,
+                    "Xbox One" to 1,
+                    "Nintendo Switch" to 7
+                )
+                platforms.forEach { (platformName, platformId) ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = selectedPlatforms.contains(platformId),
+                            onCheckedChange = { checked ->
+                                if (checked) {
+                                    selectedPlatforms.add(platformId)
+                                } else {
+                                    selectedPlatforms.remove(platformId)
+                                }
+                            }
+                        )
+                        Text(text = platformName)
+                    }
+                }
+            }
         }
     }
 }
@@ -269,28 +372,28 @@ fun GameCardItem(games: GamesInList, modifier: Modifier = Modifier, onClick: () 
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun HomeScreenPreview() {
-    // On crée une version simplifiée de l'état des jeux pour prévisualisation
-    val mockGamesUiState = GamesUiState.Success(
-        games = listOf(
-            GamesInList(id = 1, name = "Game 1", background_image = "https://example.com/image1.jpg"),
-            GamesInList(id = 2, name = "Game 2", background_image = "https://example.com/image2.jpg"),
-            GamesInList(id = 3, name = "Game 3", background_image = "https://example.com/image3.jpg")
-        )
-    )
-
-    HomeScreen(
-        gamesUiState = mockGamesUiState,
-        retryAction = {},
-        onLoadMore = {},
-        onGameClick = {},
-        onSearch = {},
-        onTitleClick = {},
-        modifier = Modifier.fillMaxSize()
-    )
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun HomeScreenPreview() {
+//    // On crée une version simplifiée de l'état des jeux pour prévisualisation
+//    val mockGamesUiState = GamesUiState.Success(
+//        games = listOf(
+//            GamesInList(id = 1, name = "Game 1", background_image = "https://example.com/image1.jpg"),
+//            GamesInList(id = 2, name = "Game 2", background_image = "https://example.com/image2.jpg"),
+//            GamesInList(id = 3, name = "Game 3", background_image = "https://example.com/image3.jpg")
+//        )
+//    )
+//
+//    HomeScreen(
+//        gamesUiState = mockGamesUiState,
+//        retryAction = {},
+//        onLoadMore = {},
+//        onGameClick = {},
+//        onSearch = {},
+//        onTitleClick = {},
+//        modifier = Modifier.fillMaxSize()
+//    )
+//}
 
 
 

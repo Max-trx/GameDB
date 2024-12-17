@@ -18,6 +18,12 @@ interface RAWGApiService {
 
     @GET("games")
     suspend fun getGameSearch(@Query("key") key: String, @Query("search") query: String): RAWGGamesResponse
+
+    @GET("games")
+    suspend fun getGameFilter(@Query("key") key: String, @Query("platforms") filter: String): RAWGGamesResponse
+
+    @GET("games")
+    suspend fun getGameSearchFilter(@Query("key") key: String, @Query("search") query: String, @Query("platforms") filter: String): RAWGGamesResponse
 }
 
 @Serializable

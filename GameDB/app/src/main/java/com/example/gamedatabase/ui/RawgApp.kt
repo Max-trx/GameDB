@@ -68,7 +68,8 @@ fun RawgApp() {
                     onGameClick = { gameId ->
                         navController.navigate("gameDetails/$gameId")
                     },
-                    onSearch = { query -> rawgViewModel.searchGames(query) },
+                    // Modifiez l'appel ici pour passer une liste vide pour les plateformes
+                    onSearch = { query, selectedPlatforms -> rawgViewModel.searchGames(query, selectedPlatforms) },
                     onTitleClick = { navController.navigate("home") }, // Ajout de onTitleClick
                     contentPadding = innerPadding
                 )

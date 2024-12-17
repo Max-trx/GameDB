@@ -8,6 +8,8 @@ interface GamesRepository {
     suspend fun getGames(query:String, page: Int): List<GamesInList>
     suspend fun getGameDetails(id: Int, query: String): GameDetails
     suspend fun getGameSearch(key: String, query: String): List<GamesInList>
+    suspend fun getGameFilter(key: String, filter: String): List<GamesInList>
+    suspend fun getGameSearchFilter(key: String, query: String, filter: String): List<GamesInList>
 }
 
 class NetworkGamesRepository(private val rawgApiService: RAWGApiService) : GamesRepository {
@@ -21,6 +23,14 @@ class NetworkGamesRepository(private val rawgApiService: RAWGApiService) : Games
 
     override suspend fun getGameSearch(key: String, query: String): List<GamesInList> {
         return rawgApiService.getGameSearch(key, query).results
+    }
+
+    override suspend fun getGameFilter(key: String, filter: String): List<GamesInList> {
+        return rawgApiService.getGameFilter(key, filter).results
+    }
+
+    override suspend fun getGameSearchFilter(key: String, query: String, filter: String): List<GamesInList> {
+        return rawgApiService.getGameSearchFilter(key, query, filter).results
     }
 }
 
