@@ -55,43 +55,6 @@ import com.example.gamedatabase.R
 import com.example.gamedatabase.model.GamesInList
 import com.example.gamedatabase.ui.screens.GamesUiState
 
-
-//@OptIn(ExperimentalMaterial3Api::class)
-//@Composable
-//fun HomeScreen(
-//    gamesUiState: GamesUiState,
-//    retryAction: () -> Unit,
-//    onLoadMore: () -> Unit,
-//    onGameClick: (Int) -> Unit,
-//    onSearch: (String) -> Unit, // Ajout du paramètre pour la recherche
-//    onTitleClick: () -> Unit,  // Navigue vers l'écran d'accueil
-//    modifier: Modifier = Modifier,
-//    contentPadding: PaddingValues = PaddingValues(0.dp),
-//) {
-//    Column {
-//        // Affiche le titre de l'application
-//        RawgTopAppBar(
-//            scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
-//            onTitleClick = onTitleClick // Clic renvoie à l'accueil
-//        )
-//
-//        // Affiche la barre de recherche
-//        SearchBar(onSearch = onSearch)
-//
-//        // Affiche le contenu en fonction de l'état
-//        when (gamesUiState) {
-//            is GamesUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
-//            is GamesUiState.Success -> GamesListScreen(
-//                games = gamesUiState.games,
-//                contentPadding = contentPadding,
-//                modifier = modifier,
-//                onLoadMore = onLoadMore,
-//                onGameClick = onGameClick
-//            )
-//            is GamesUiState.Error -> ErrorScreen(retryAction, modifier = modifier.fillMaxSize())
-//        }
-//    }
-//}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -448,29 +411,6 @@ fun GameCardItem(games: GamesInList, modifier: Modifier = Modifier, onClick: () 
         }
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun HomeScreenPreview() {
-//    // On crée une version simplifiée de l'état des jeux pour prévisualisation
-//    val mockGamesUiState = GamesUiState.Success(
-//        games = listOf(
-//            GamesInList(id = 1, name = "Game 1", background_image = "https://example.com/image1.jpg"),
-//            GamesInList(id = 2, name = "Game 2", background_image = "https://example.com/image2.jpg"),
-//            GamesInList(id = 3, name = "Game 3", background_image = "https://example.com/image3.jpg")
-//        )
-//    )
-//
-//    HomeScreen(
-//        gamesUiState = mockGamesUiState,
-//        retryAction = {},
-//        onLoadMore = {},
-//        onGameClick = {},
-//        onSearch = {},
-//        onTitleClick = {},
-//        modifier = Modifier.fillMaxSize()
-//    )
-//}
 
 
 
