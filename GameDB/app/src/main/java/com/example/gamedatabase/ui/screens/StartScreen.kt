@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.paddingFromBaseline
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -271,6 +272,34 @@ fun SearchBarWithFilters(
 }
 
 @Composable
+fun GamesFavoriteScreen(
+    games: List<GamesInList>,
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    onGameClick: (Int) -> Unit,
+    onFavoriteClick: (Int) -> Unit,
+    rawgViewModel: CombinedViewModel
+) {
+    Column(
+        modifier = modifier.padding(horizontal = 8.dp)
+    ) {
+        Spacer(modifier = Modifier.height(90.dp)) // Ajoute un espace manuel
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(games) { game ->
+                GameCardItem(
+                    game,
+                    onClick = { onGameClick(game.id) },
+                    onFavoriteClick = onFavoriteClick,
+                    rawgViewModel = rawgViewModel
+                )
+            }
+        }
+    }
+}
+
+@Composable
 fun GamesListScreen(
     games: List<GamesInList>,
     modifier: Modifier = Modifier,
@@ -396,6 +425,8 @@ fun GameCardItem(games: GamesInList, modifier: Modifier = Modifier, onClick: () 
         }
     }
 }
+
+
 
 
 

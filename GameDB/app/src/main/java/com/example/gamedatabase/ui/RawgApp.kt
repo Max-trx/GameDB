@@ -5,7 +5,9 @@ package com.example.gamedatabase.ui
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -42,9 +44,9 @@ import com.example.gamedatabase.data.AppDatabase
 import com.example.gamedatabase.data.OfflineUserRepository
 import com.example.gamedatabase.data.UserRepository
 import com.example.gamedatabase.ui.screens.CombinedViewModel
+import com.example.gamedatabase.ui.screens.FavoritesScreen
 import com.example.gamedatabase.ui.screens.GameDetailsScreen
 import com.example.gamedatabase.ui.screens.LoginScreen
-import com.example.gamedatabase.ui.screens.RandomGameDetailsScreen
 import com.example.gamedatabase.ui.screens.RandomGameDetailsScreenWithShake
 import kotlinx.coroutines.launch
 
@@ -134,26 +136,42 @@ fun RawgApp() {
                 }
             }
 
-//            //Favorites
-//            composable("favoris") {
-//                Scaffold(
-//                    topBar = {
-//                        RawgTopAppBarWithMenu(
-//                            scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
-//                            onMenuClick = { scope.launch {
-//                                drawerState.open()
-//                            }  },
-//                            onTitleClick = {
-//                                rawgViewModel.loadOriginalGames() // Charger les jeux d'origine
-//                                navController.popBackStack("home", inclusive = false)
-//                            }
-//                        )
-//                    }
-//                ) { innerPadding ->
-//                    //créer une liste des Id du user connecté
-//                    GamesListScreen(//passer la liste ici)
-//                }
-//            }
+            //Favorites
+            composable("favoris") {
+                Scaffold(
+                    topBar = {
+                        RawgTopAppBarWithMenu(
+                            scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
+                            onMenuClick = { scope.launch {
+                                drawerState.open()
+                            }  },
+                            onTitleClick = {
+                                rawgViewModel.loadOriginalGames() // Charger les jeux d'origine
+                                navController.popBackStack("home", inclusive = false)
+                            }
+                        )
+                    }
+                ) { innerPadding ->
+                    FavoritesScreen(
+                        userRepository = userRepository,
+                        rawgViewModel = rawgViewModel,
+                        contentPadding = innerPadding,
+                        onLoadMore = { gameId ->
+                            navController.navigate("gameDetails/$gameId")
+                        },
+                        onGameClick = { gameId ->
+                            navController.navigate("gameDetails/$gameId")
+                        },
+                        onFavoriteClick = { gameId ->
+                            rawgViewModel.toggleGameInFavorites(
+                                gameId,
+                                userRepository
+                            )
+                        }
+                    )
+                }
+            }
+
 
             // Game details screen
             composable("gameDetails/{gameId}") { backStackEntry ->

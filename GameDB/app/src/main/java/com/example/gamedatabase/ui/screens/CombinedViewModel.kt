@@ -31,7 +31,7 @@ sealed interface GameDetailsUiState {
     object Loading : GameDetailsUiState
 }
 
-class CombinedViewModel(private val gamesRepository: GamesRepository) : ViewModel() {
+class CombinedViewModel(val gamesRepository: GamesRepository) : ViewModel() {
     var gamesUiState: GamesUiState by mutableStateOf(GamesUiState.Loading)
         private set
 
