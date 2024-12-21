@@ -29,6 +29,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -53,19 +54,21 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.gamedatabase.R
 import com.example.gamedatabase.model.GamesInList
+import com.example.gamedatabase.ui.screens.CombinedViewModel
 import com.example.gamedatabase.ui.screens.GamesUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(
-    gamesUiState: GamesUiState,
-    retryAction: () -> Unit,
-    onLoadMore: () -> Unit,
-    onGameClick: (Int) -> Unit,
-    onSearch: (String, List<Int>, List<String>) -> Unit, // Modifié pour inclure les plateformes
-    onTitleClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
+fun HomeScreen(rawgViewModel: CombinedViewModel,
+               gamesUiState: GamesUiState,
+               retryAction: () -> Unit,
+               onLoadMore: () -> Unit,
+               onGameClick: (Int) -> Unit,
+               onSearch: (String, List<Int>, List<String>) -> Unit, // Modifié pour inclure les plateformes
+               onTitleClick: () -> Unit,
+               modifier: Modifier = Modifier,
+               contentPadding: PaddingValues = PaddingValues(0.dp),
+               onFavoriteClick: (Int) -> Unit
 ) {
     Column {
         RawgTopAppBar(
@@ -84,7 +87,9 @@ fun HomeScreen(
                 contentPadding = contentPadding,
                 modifier = modifier,
                 onLoadMore = onLoadMore,
-                onGameClick = onGameClick
+                onGameClick = onGameClick,
+                onFavoriteClick = onFavoriteClick,
+                rawgViewModel = rawgViewModel
             )
             is GamesUiState.Error -> ErrorScreen(retryAction, modifier = modifier.fillMaxSize())
         }
@@ -120,34 +125,6 @@ fun ErrorScreen(retryAction: () -> Unit, modifier: Modifier = Modifier) {
         Text(text = stringResource(R.string.loading_failed), modifier = Modifier.padding(16.dp))
         Button(onClick = retryAction) {
             Text(stringResource(R.string.retry))
-        }
-    }
-}
-
-@Composable
-fun SearchBar(onSearch: (String) -> Unit, modifier: Modifier = Modifier) {
-    var searchText by remember { mutableStateOf("") }
-
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        TextField(
-            value = searchText,
-            onValueChange = { searchText = it },
-            placeholder = { Text("Search...") },
-            modifier = Modifier
-                .weight(1f)
-                .padding(end = 8.dp)
-        )
-        Button(
-            onClick = { onSearch(searchText) }, // Passe le texte à la fonction de recherche
-            modifier = Modifier.height(56.dp)
-        ) {
-            Text("Search")
         }
     }
 }
@@ -293,19 +270,15 @@ fun SearchBarWithFilters(
     }
 }
 
-
-
-
-
-
-
 @Composable
 fun GamesListScreen(
     games: List<GamesInList>,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     onLoadMore: () -> Unit,
-    onGameClick: (Int) -> Unit
+    onGameClick: (Int) -> Unit,
+    onFavoriteClick: (Int) -> Unit,
+    rawgViewModel: CombinedViewModel
 ) {
     LazyColumn(
         modifier = modifier.padding(horizontal = 8.dp),
@@ -313,7 +286,12 @@ fun GamesListScreen(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(games) { game ->
-            GameCardItem(game, onClick = { onGameClick(game.id) })
+            GameCardItem(
+                game, onClick = { onGameClick(game.id) },
+                modifier = modifier,
+                onFavoriteClick = onFavoriteClick,
+                rawgViewModel = rawgViewModel
+            )
         }
 
         // Item sentinel pour charger plus de jeux
@@ -333,7 +311,8 @@ fun GamesListScreen(
 
 
 @Composable
-fun GameCardItem(games: GamesInList, modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun GameCardItem(games: GamesInList, modifier: Modifier = Modifier, onClick: () -> Unit,
+                 onFavoriteClick: (Int) -> Unit, rawgViewModel: CombinedViewModel) {
     Card(
         modifier = modifier.clickable(onClick = onClick), // Gestion du clic
         shape = RoundedCornerShape(12.dp),
@@ -385,7 +364,7 @@ fun GameCardItem(games: GamesInList, modifier: Modifier = Modifier, onClick: () 
                     modifier = Modifier.size(20.dp)
                 )
                 Text(
-                    text = games.released.toString(),
+                    text = games.released.toString() ?: "Unknown Date",
                     style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
                     modifier = Modifier
                         .padding(start = 8.dp)
@@ -394,7 +373,7 @@ fun GameCardItem(games: GamesInList, modifier: Modifier = Modifier, onClick: () 
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = (games.metacritic.toString()+"/100"),
+                        text = (((games.metacritic.toString() + "/100") ?: "--/100")),
                         style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.primary),
                         textAlign = TextAlign.End
                     )
@@ -406,6 +385,12 @@ fun GameCardItem(games: GamesInList, modifier: Modifier = Modifier, onClick: () 
                             .size(20.dp)
                             .padding(start = 8.dp)
                     )
+                    IconButton(onClick = { onFavoriteClick(games.id) }) {
+                        Icon(
+                            painter = painterResource(R.drawable.star),
+                            contentDescription = "Add to Favorites"
+                        )
+                    }
                 }
             }
         }

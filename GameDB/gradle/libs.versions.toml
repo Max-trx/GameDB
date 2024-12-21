@@ -1,6 +1,6 @@
 [versions]
 activityComposeVersion = "1.8.0"
-agp = "8.6.0"
+agp = "8.7.3"
 androidxComposeBom = "2024.12.01"
 coilCompose = "2.4.0"
 composeBomVersion = "2023.08.00"
@@ -25,6 +25,7 @@ retrofit2KotlinxSerializationConverter = "1.0.0"
 uiTestAndroid = "1.7.6"
 monitor = "1.6.1"
 foundationLayoutAndroid = "1.7.2"
+roomKtx = "2.6.1"
 
 [libraries]
 androidx-activity-compose-v180 = { module = "androidx.activity:activity-compose", version.ref = "activityComposeVersion" }
@@ -64,6 +65,7 @@ ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 androidx-monitor = { group = "androidx.test", name = "monitor", version.ref = "monitor" }
 androidx-foundation-layout-android = { group = "androidx.compose.foundation", name = "foundation-layout-android", version.ref = "foundationLayoutAndroid" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

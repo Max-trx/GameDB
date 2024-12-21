@@ -29,6 +29,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -37,8 +38,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.gamedatabase.R
+import com.example.gamedatabase.data.AppDatabase
+import com.example.gamedatabase.data.OfflineUserRepository
+import com.example.gamedatabase.data.UserRepository
 import com.example.gamedatabase.ui.screens.CombinedViewModel
 import com.example.gamedatabase.ui.screens.GameDetailsScreen
+import com.example.gamedatabase.ui.screens.LoginScreen
 import com.example.gamedatabase.ui.screens.RandomGameDetailsScreen
 import com.example.gamedatabase.ui.screens.RandomGameDetailsScreenWithShake
 import kotlinx.coroutines.launch
@@ -49,6 +54,7 @@ import kotlinx.coroutines.launch
 fun RawgApp() {
     val navController = rememberNavController()
     val rawgViewModel: CombinedViewModel = viewModel(factory = CombinedViewModel.Factory)
+    val userRepository: UserRepository = OfflineUserRepository(AppDatabase.getDatabase(LocalContext.current).userDao())
 
     var drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -74,7 +80,7 @@ fun RawgApp() {
                             scope.launch {
                                 drawerState.close()
                             }
-                            navController.navigate("home") // Navigue vers l'accueil
+                            navController.navigate("favoris") // Navigue vers l'accueil
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -84,7 +90,16 @@ fun RawgApp() {
             }
         }
     ) {
-        NavHost(navController = navController, startDestination = "home") {
+        NavHost(navController = navController, startDestination = "login") {
+            // Login screen
+            composable("login") {
+                LoginScreen(
+                    onLoginSuccess = { navController.navigate("home") { popUpTo("login") { inclusive = true } } },
+                    onSignUp = { /* Implémenter un écran d'inscription si nécessaire */ },
+                    userRepository = userRepository,
+                    rawgViewModel = rawgViewModel
+                )
+            }
             // Home screen
             composable("home") {
                 Scaffold(
@@ -112,10 +127,33 @@ fun RawgApp() {
                             rawgViewModel.searchGames(query, selectedPlatforms, selectedGenres)
                         },
                         onTitleClick = { navController.navigate("home") },
-                        contentPadding = innerPadding
+                        contentPadding = innerPadding,
+                        onFavoriteClick = {gameId -> rawgViewModel.toggleGameInFavorites(gameId, userRepository)},
+                        rawgViewModel = rawgViewModel
                     )
                 }
             }
+
+//            //Favorites
+//            composable("favoris") {
+//                Scaffold(
+//                    topBar = {
+//                        RawgTopAppBarWithMenu(
+//                            scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
+//                            onMenuClick = { scope.launch {
+//                                drawerState.open()
+//                            }  },
+//                            onTitleClick = {
+//                                rawgViewModel.loadOriginalGames() // Charger les jeux d'origine
+//                                navController.popBackStack("home", inclusive = false)
+//                            }
+//                        )
+//                    }
+//                ) { innerPadding ->
+//                    //créer une liste des Id du user connecté
+//                    GamesListScreen(//passer la liste ici)
+//                }
+//            }
 
             // Game details screen
             composable("gameDetails/{gameId}") { backStackEntry ->

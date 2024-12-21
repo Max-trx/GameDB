@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     kotlin("plugin.serialization") version "1.9.10"
+    id("com.google.devtools.ksp") version "1.9.10-1.0.13"
 }
 
 android {
@@ -63,6 +64,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.monitor)
     implementation(libs.androidx.foundation.layout.android)
+    implementation(libs.androidx.room.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -91,6 +93,9 @@ dependencies {
 
     //Http interceptor
     implementation (libs.logging.interceptor)
+
+
+    ksp("androidx.room:room-compiler:${rootProject.extra["room_version"]}")
 
     debugImplementation(libs.ui.test.manifest)
     debugImplementation(libs.ui.tooling)
