@@ -16,7 +16,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.example.gamedatabase.ui.LoadingScreen
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -25,7 +24,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.gamedatabase.R
-import com.example.gamedatabase.ui.ErrorScreen
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -33,6 +31,8 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
+import com.example.gamedatabase.screens.ui.ErrorScreen
+import com.example.gamedatabase.screens.ui.LoadingScreen
 
 @Composable
 fun RandomGameDetailsScreen(modifier: Modifier = Modifier) {

@@ -1,4 +1,4 @@
-package com.example.gamedatabase.ui
+package com.example.gamedatabase.screens.ui
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,16 +9,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.paddingFromBaseline
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -29,6 +31,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -40,6 +43,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
@@ -55,8 +59,10 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.gamedatabase.R
 import com.example.gamedatabase.model.GamesInList
+import com.example.gamedatabase.ui.RawgTopAppBar
 import com.example.gamedatabase.ui.screens.CombinedViewModel
 import com.example.gamedatabase.ui.screens.GamesUiState
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -173,8 +179,7 @@ fun SearchBarWithFilters(
             Button(
                 onClick = {
                     val platformList = selectedPlatform?.let { listOf(it) } ?: emptyList()
-                    val genreList = selectedGenres
-                    onSearch(searchText, platformList, genreList)
+                    onSearch(searchText, platformList, selectedGenres)
                 },
                 modifier = Modifier.height(56.dp)
             ) {
@@ -309,39 +314,68 @@ fun GamesListScreen(
     onFavoriteClick: (Int) -> Unit,
     rawgViewModel: CombinedViewModel
 ) {
-    LazyColumn(
-        modifier = modifier.padding(horizontal = 8.dp),
-        contentPadding = PaddingValues(0.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(games) { game ->
-            GameCardItem(
-                game, onClick = { onGameClick(game.id) },
-                modifier = modifier,
-                onFavoriteClick = onFavoriteClick,
-                rawgViewModel = rawgViewModel
-            )
-        }
-
-        // Item sentinel pour charger plus de jeux
-        item {
-            LaunchedEffect(Unit) {
-                onLoadMore()
+    val listState = rememberLazyListState() // État de la liste pour le contrôle du défilement
+    val coroutineScope = rememberCoroutineScope() // Scope pour lancer des coroutines
+    Box(modifier = modifier.fillMaxSize()) {
+        LazyColumn(
+            state = listState, // Connectez l'état à la LazyColumn
+            contentPadding = PaddingValues(0.dp),
+            modifier = modifier.padding(horizontal = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(games) { game ->
+                GameCardItem(
+                    game, onClick = { onGameClick(game.id) },
+                    modifier = Modifier,
+                    onFavoriteClick = onFavoriteClick,
+                    rawgViewModel = rawgViewModel
+                )
             }
-            CircularProgressIndicator(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                strokeWidth = 4.dp
-            )
+            // Item sentinel pour charger plus de jeux
+            item {
+                LaunchedEffect(Unit) {
+                    onLoadMore()
+                }
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    strokeWidth = 4.dp
+                )
+            }
+        }
+        // Bouton flottant pour remonter en haut
+        FloatingActionButton(
+            onClick = {
+                coroutineScope.launch {
+                    // Défilement jusqu'en haut
+                    listState.animateScrollToItem(0)
+                }
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd) // Positionner le FAB en bas à droite
+                .padding(16.dp)
+                .size(60.dp),
+            containerColor = Color.Black,
+        ) {
+            Box(
+                modifier = Modifier.padding(8.dp) // Marge interne entre l'icône et les bords
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.arrow_up),
+                    contentDescription = "Scroll to Top",
+                    tint = Color.White
+                )
+            }
         }
     }
 }
 
-
 @Composable
-fun GameCardItem(games: GamesInList, modifier: Modifier = Modifier, onClick: () -> Unit,
+fun GameCardItem(game: GamesInList, modifier: Modifier = Modifier, onClick: () -> Unit,
                  onFavoriteClick: (Int) -> Unit, rawgViewModel: CombinedViewModel) {
+    // Observer l'état favori
+    val isFavorite = rawgViewModel.favoriteStates[game.id] ?: false
     Card(
         modifier = modifier.clickable(onClick = onClick), // Gestion du clic
         shape = RoundedCornerShape(12.dp),
@@ -352,10 +386,10 @@ fun GameCardItem(games: GamesInList, modifier: Modifier = Modifier, onClick: () 
             modifier = Modifier.padding(8.dp)
         ) {
             AsyncImage(
-                model = games.background_image,
+                model = game.background_image,
                 error = painterResource(R.drawable.ic_broken_image),
                 placeholder = painterResource(R.drawable.loading_img),
-                contentDescription = games.name,
+                contentDescription = game.name,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -363,7 +397,7 @@ fun GameCardItem(games: GamesInList, modifier: Modifier = Modifier, onClick: () 
                     .clip(RoundedCornerShape(8.dp))
             )
             Text(
-                text = games.name,
+                text = game.name,
                 style = MaterialTheme.typography.bodyLarge.copy(
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
@@ -393,7 +427,7 @@ fun GameCardItem(games: GamesInList, modifier: Modifier = Modifier, onClick: () 
                     modifier = Modifier.size(20.dp)
                 )
                 Text(
-                    text = games.released.toString() ?: "Unknown Date",
+                    text = game.released.toString(),
                     style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
                     modifier = Modifier
                         .padding(start = 8.dp)
@@ -401,24 +435,40 @@ fun GameCardItem(games: GamesInList, modifier: Modifier = Modifier, onClick: () 
                 )
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    val grade: String = if (game.metacritic == null){
+                        "--"
+                    } else{
+                        game.metacritic.toString()
+                    }
                     Text(
-                        text = (((games.metacritic.toString() + "/100") ?: "--/100")),
+                        text = "$grade/100",
                         style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.primary),
                         textAlign = TextAlign.End
                     )
-                    Icon(
-                        painter = painterResource(R.drawable.star),
-                        contentDescription = "Note Metacritic",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .size(20.dp)
-                            .padding(start = 8.dp)
-                    )
-                    IconButton(onClick = { onFavoriteClick(games.id) }) {
-                        Icon(
-                            painter = painterResource(R.drawable.star),
-                            contentDescription = "Add to Favorites"
-                        )
+//                    Icon(
+//                        painter = painterResource(R.drawable.star),
+//                        contentDescription = "Note Metacritic",
+//                        tint = MaterialTheme.colorScheme.primary,
+//                        modifier = Modifier
+//                            .size(20.dp)
+//                            .padding(start = 8.dp)
+//                    )
+                    IconButton(onClick = { onFavoriteClick(game.id) }) {
+                        if (isFavorite){
+                            Icon(
+                                painter = painterResource(R.drawable.star_full_yellow),
+                                contentDescription = "Add to Favorites",
+                                modifier = Modifier.size(30.dp)
+                            )
+                        }
+                        else{
+                            Icon(
+                                painter = painterResource(R.drawable.star_empty),
+                                contentDescription = "Add to Favorites",
+                                modifier = Modifier.size(30.dp)
+                            )
+                        }
+
                     }
                 }
             }

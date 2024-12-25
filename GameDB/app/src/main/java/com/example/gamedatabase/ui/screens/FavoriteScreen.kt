@@ -15,8 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
 import com.example.gamedatabase.data.UserRepository
 import com.example.gamedatabase.model.GamesInList
-import com.example.gamedatabase.ui.GamesFavoriteScreen
-import com.example.gamedatabase.ui.GamesListScreen
+import com.example.gamedatabase.screens.ui.GamesFavoriteScreen
 
 @Composable
 fun FavoritesScreen(
@@ -60,10 +59,10 @@ fun FavoritesScreen(
     }
     GamesFavoriteScreen(
         games = favoriteGames.value,
-        rawgViewModel = rawgViewModel,
         contentPadding = contentPadding,
         modifier = modifier,
         onGameClick = onGameClick,
-        onFavoriteClick = onFavoriteClick
+        onFavoriteClick = onFavoriteClick,
+        rawgViewModel = rawgViewModel
     )
 }

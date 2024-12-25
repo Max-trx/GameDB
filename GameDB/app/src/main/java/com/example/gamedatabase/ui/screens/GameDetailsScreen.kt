@@ -14,7 +14,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.example.gamedatabase.ui.LoadingScreen
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
@@ -27,7 +26,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gamedatabase.model.GameDetails
-import com.example.gamedatabase.ui.ErrorScreen
+import com.example.gamedatabase.screens.ui.ErrorScreen
+import com.example.gamedatabase.screens.ui.LoadingScreen
 
 @Composable
 fun GameDetailsScreen(gameId: Int, modifier: Modifier = Modifier) {

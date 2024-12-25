@@ -43,6 +43,7 @@ import com.example.gamedatabase.R
 import com.example.gamedatabase.data.AppDatabase
 import com.example.gamedatabase.data.OfflineUserRepository
 import com.example.gamedatabase.data.UserRepository
+import com.example.gamedatabase.screens.ui.HomeScreen
 import com.example.gamedatabase.ui.screens.CombinedViewModel
 import com.example.gamedatabase.ui.screens.FavoritesScreen
 import com.example.gamedatabase.ui.screens.GameDetailsScreen
@@ -92,7 +93,7 @@ fun RawgApp() {
             }
         }
     ) {
-        NavHost(navController = navController, startDestination = "login") {
+        NavHost(navController = navController, startDestination = "home") {
             // Login screen
             composable("login") {
                 LoginScreen(
@@ -130,7 +131,12 @@ fun RawgApp() {
                         },
                         onTitleClick = { navController.navigate("home") },
                         contentPadding = innerPadding,
-                        onFavoriteClick = {gameId -> rawgViewModel.toggleGameInFavorites(gameId, userRepository)},
+                        onFavoriteClick = { gameId ->
+                            rawgViewModel.toggleGameInFavorites(
+                                gameId,
+                                userRepository
+                            )
+                        },
                         rawgViewModel = rawgViewModel
                     )
                 }

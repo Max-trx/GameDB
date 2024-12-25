@@ -2,6 +2,7 @@ package com.example.gamedatabase.ui.screens
 
 import android.util.Log
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -49,55 +50,55 @@ class CombinedViewModel(val gamesRepository: GamesRepository) : ViewModel() {
         loggedInUserId = userId
     }
 
-    fun addGameToFavorites(gameId: Int, userRepository: UserRepository) {
-        Log.d("CombinedViewModel", "LoggedInUserId: $loggedInUserId")
-        loggedInUserId?.let { userId ->
-            viewModelScope.launch {
-                val user = userRepository.getUserById(userId)
-                user?.let {
-                    val currentFavorites = it.favGames.split(",").filter { it.isNotEmpty() }.toMutableList()
-                    Log.d("FavoritesBefore", "Current Favorites: $currentFavorites")
-                    if (!currentFavorites.contains(gameId.toString())) {
-                        currentFavorites.add(gameId.toString())
-                        val updatedFavorites = currentFavorites.joinToString(",")
-                        Log.d("FavoritesAfter", "Updated Favorites: $updatedFavorites")
-                        userRepository.updateFavGames(userId, updatedFavorites)
+//    fun addGameToFavorites(gameId: Int, userRepository: UserRepository) {
+//        Log.d("CombinedViewModel", "LoggedInUserId: $loggedInUserId")
+//        loggedInUserId?.let { userId ->
+//            viewModelScope.launch {
+//                val user = userRepository.getUserById(userId)
+//                user?.let {
+//                    val currentFavorites = it.favGames.split(",").filter { it.isNotEmpty() }.toMutableList()
+//                    Log.d("FavoritesBefore", "Current Favorites: $currentFavorites")
+//                    if (!currentFavorites.contains(gameId.toString())) {
+//                        currentFavorites.add(gameId.toString())
+//                        val updatedFavorites = currentFavorites.joinToString(",")
+//                        Log.d("FavoritesAfter", "Updated Favorites: $updatedFavorites")
+//                        userRepository.updateFavGames(userId, updatedFavorites)
+//
+//                        // Vérifiez la mise à jour
+//                        val updatedUser = userRepository.getUserById(userId)
+//                        Log.d("CheckFavorites", "Favorites in DB: ${updatedUser?.favGames}")
+//                    }
+//                } ?: Log.e("ToggleGameToFavorites", "User not found")
+//            }
+//        } ?: Log.e("ToggleGameToFavorites", "No logged-in user")
+//    }
 
-                        // Vérifiez la mise à jour
-                        val updatedUser = userRepository.getUserById(userId)
-                        Log.d("CheckFavorites", "Favorites in DB: ${updatedUser?.favGames}")
-                    }
-                } ?: Log.e("ToggleGameToFavorites", "User not found")
-            }
-        } ?: Log.e("ToggleGameToFavorites", "No logged-in user")
-    }
+    private val _favoriteStates = mutableStateMapOf<Int, Boolean>()
+    val favoriteStates: Map<Int, Boolean> get() = _favoriteStates
 
     fun toggleGameInFavorites(gameId: Int, userRepository: UserRepository) {
-        Log.d("CombinedViewModel", "LoggedInUserId: $loggedInUserId")
         loggedInUserId?.let { userId ->
             viewModelScope.launch {
                 val user = userRepository.getUserById(userId)
                 user?.let {
                     val currentFavorites = it.favGames.split(",").filter { it.isNotEmpty() }.toMutableList()
-                    Log.d("FavoritesBefore", "Current Favorites: $currentFavorites")
 
-                    if (currentFavorites.contains(gameId.toString())) {
-                        // Retire le jeu des favoris
+                    val updatedFavorite = if (currentFavorites.contains(gameId.toString())) {
                         currentFavorites.remove(gameId.toString())
-                        Log.d("FavoritesAction", "Removed GameId: $gameId from Favorites")
+                        false // Le jeu est retiré des favoris
                     } else {
-                        // Ajoute le jeu aux favoris
                         currentFavorites.add(gameId.toString())
-                        Log.d("FavoritesAction", "Added GameId: $gameId to Favorites")
+                        true // Le jeu est ajouté aux favoris
                     }
 
                     val updatedFavorites = currentFavorites.joinToString(",")
-                    Log.d("FavoritesAfter", "Updated Favorites: $updatedFavorites")
                     userRepository.updateFavGames(userId, updatedFavorites)
 
-                    // Vérifiez la mise à jour
-                    val updatedUser = userRepository.getUserById(userId)
-                    Log.d("CheckFavorites", "Favorites in DB: ${updatedUser?.favGames}")
+                    // Mettre à jour l'état observable
+                    _favoriteStates[gameId] = updatedFavorite
+
+                    // Log de vérification
+                    Log.d("FavoritesAfter", "Updated Favorites: $updatedFavorites")
                 } ?: Log.e("ToggleGameInFavorites", "User not found")
             }
         } ?: Log.e("ToggleGameInFavorites", "No logged-in user")
