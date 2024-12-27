@@ -93,7 +93,7 @@ fun RawgApp() {
             }
         }
     ) {
-        NavHost(navController = navController, startDestination = "home") {
+        NavHost(navController = navController, startDestination = "login") {
             // Login screen
             composable("login") {
                 LoginScreen(

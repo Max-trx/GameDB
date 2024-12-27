@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -41,6 +40,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -55,10 +55,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.gamedatabase.R
+import com.example.gamedatabase.data.GamesRepository
 import com.example.gamedatabase.model.GamesInList
+import com.example.gamedatabase.model.Platform
+import com.example.gamedatabase.model.PlatformSpec
 import com.example.gamedatabase.ui.RawgTopAppBar
 import com.example.gamedatabase.ui.screens.CombinedViewModel
 import com.example.gamedatabase.ui.screens.GamesUiState
@@ -314,11 +319,11 @@ fun GamesListScreen(
     onFavoriteClick: (Int) -> Unit,
     rawgViewModel: CombinedViewModel
 ) {
-    val listState = rememberLazyListState() // État de la liste pour le contrôle du défilement
-    val coroutineScope = rememberCoroutineScope() // Scope pour lancer des coroutines
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
-            state = listState, // Connectez l'état à la LazyColumn
+            state = listState,
             contentPadding = PaddingValues(0.dp),
             modifier = modifier.padding(horizontal = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -353,13 +358,13 @@ fun GamesListScreen(
                 }
             },
             modifier = Modifier
-                .align(Alignment.BottomEnd) // Positionner le FAB en bas à droite
+                .align(Alignment.BottomEnd)
                 .padding(16.dp)
                 .size(60.dp),
             containerColor = Color.Black,
         ) {
             Box(
-                modifier = Modifier.padding(8.dp) // Marge interne entre l'icône et les bords
+                modifier = Modifier.padding(8.dp)
             ) {
                 Icon(
                     painter = painterResource(R.drawable.arrow_up),
@@ -374,13 +379,12 @@ fun GamesListScreen(
 @Composable
 fun GameCardItem(game: GamesInList, modifier: Modifier = Modifier, onClick: () -> Unit,
                  onFavoriteClick: (Int) -> Unit, rawgViewModel: CombinedViewModel) {
-    // Observer l'état favori
     val isFavorite = rawgViewModel.favoriteStates[game.id] ?: false
     Card(
         modifier = modifier.clickable(onClick = onClick), // Gestion du clic
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface) // Utilisation de la couleur des surfaces du thème
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(
             modifier = Modifier.padding(8.dp)
@@ -413,12 +417,56 @@ fun GameCardItem(game: GamesInList, modifier: Modifier = Modifier, onClick: () -
                     .fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
-
+            var platformsList = ""
+            game.platforms?.forEach { platform ->
+                platformsList += platform.platform.name + ", "
+            }
+            if (platformsList.endsWith(", ")) {
+                platformsList = platformsList.substring(0, platformsList.length - 2)
+            }
+            Row (
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 120.dp, vertical = 5.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceAround
+            ){
+                if (platformsList.contains("PC")){
+                    Icon(
+                        painter = painterResource(R.drawable.logo_pc),
+                        contentDescription = "PC",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                if (platformsList.contains("PlayStation 5") || platformsList.contains("PlayStation 4")){
+                    Icon(
+                        painter = painterResource(R.drawable.logo_playsatation),
+                        contentDescription = "Playstation",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                if (platformsList.contains("Xbox Series S/X") || platformsList.contains("Xbox One")){
+                    Icon(
+                        painter = painterResource(R.drawable.logo_xbox),
+                        contentDescription = "Xbox",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                if (platformsList.contains("Nintendo Switch")){
+                    Icon(
+                        painter = painterResource(R.drawable.logo_switch),
+                        contentDescription = "Nitendo Switch",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Icon(
                     painter = painterResource(R.drawable.calendar),
@@ -434,53 +482,37 @@ fun GameCardItem(game: GamesInList, modifier: Modifier = Modifier, onClick: () -
                         .weight(1f)
                 )
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    val grade: String = if (game.metacritic == null){
-                        "--"
-                    } else{
-                        game.metacritic.toString()
+                //Row(verticalAlignment = Alignment.CenterVertically) {
+                val grade: String = if (game.metacritic == null){
+                    "--"
+                } else{
+                    game.metacritic.toString()
+                }
+                Text(
+                    text = "$grade/100",
+                    style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.primary),
+                    textAlign = TextAlign.End
+                )
+                IconButton(onClick = { onFavoriteClick(game.id) }) {
+                    if (isFavorite){
+                        Icon(
+                            painter = painterResource(R.drawable.star_full_yellow),
+                            contentDescription = "Add to Favorites",
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
-                    Text(
-                        text = "$grade/100",
-                        style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.primary),
-                        textAlign = TextAlign.End
-                    )
-//                    Icon(
-//                        painter = painterResource(R.drawable.star),
-//                        contentDescription = "Note Metacritic",
-//                        tint = MaterialTheme.colorScheme.primary,
-//                        modifier = Modifier
-//                            .size(20.dp)
-//                            .padding(start = 8.dp)
-//                    )
-                    IconButton(onClick = { onFavoriteClick(game.id) }) {
-                        if (isFavorite){
-                            Icon(
-                                painter = painterResource(R.drawable.star_full_yellow),
-                                contentDescription = "Add to Favorites",
-                                modifier = Modifier.size(30.dp)
-                            )
-                        }
-                        else{
-                            Icon(
-                                painter = painterResource(R.drawable.star_empty),
-                                contentDescription = "Add to Favorites",
-                                modifier = Modifier.size(30.dp)
-                            )
-                        }
-
+                    else{
+                        Icon(
+                            painter = painterResource(R.drawable.star_empty),
+                            contentDescription = "Add to Favorites",
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                 }
+                //}
             }
         }
     }
 }
-
-
-
-
-
-
-
 
 

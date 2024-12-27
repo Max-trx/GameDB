@@ -41,12 +41,12 @@ data class Genre (
 )
 
 @Serializable
-data class Platform (
+data class Platform(
     val platform: PlatformSpec,
     val released_at: String? = null,
     val requirementsEn: RequirementsEn? = null,
 
-)
+    )
 
 @Serializable
 data class PlatformSpec(

@@ -26,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gamedatabase.model.GameDetails
+import com.example.gamedatabase.model.Platform
 import com.example.gamedatabase.screens.ui.ErrorScreen
 import com.example.gamedatabase.screens.ui.LoadingScreen
 
@@ -72,10 +73,80 @@ fun GameDetailsScreen(gameId: Int, modifier: Modifier = Modifier) {
                         .fillMaxWidth(),
                     textAlign = TextAlign.Center
                 )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Release Date
+                Text(
+                    text = "Released: ${gameDetails.released}",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onBackground
+                    ),
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                //Grade
+                val grade: String = if (gameDetails.metacritic == null){"Not exist"}
+                else {gameDetails.metacritic.toString()+"/100"}
+                Text(
+                    text = "Metacritic Score: $grade",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onBackground
+                    ),
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+                Text(
+                    text = "Rating by players: ${gameDetails.rating}/5 evaluated by ${gameDetails.ratings_count} players",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onBackground
+                    ),
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+                Text(
+                    text = "Average playtime on this game: ${gameDetails.playtime} hours",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onBackground
+                    ),
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+                var platformsList = "" // Assurez-vous d'initialiser la chaîne
+                gameDetails.platforms?.forEach { platform ->
+                    platformsList += platform.platform.name + ", " // Ajoutez une virgule pour séparer les plateformes
+                }
+                if (platformsList.endsWith(", ")) {
+                    platformsList = platformsList.substring(0, platformsList.length - 2)
+                }
+                Text(
+                    text = "Platforms: $platformsList", // Utilisez l'interpolation de chaîne
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onBackground
+                    ),
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+
+                //Genre
+                Spacer(modifier = Modifier.height(16.dp))
+                var genreList = ""
+                gameDetails.genres?.forEach { genre ->
+                    genreList += genre.name + ", "
+                }
+                if (genreList.endsWith(", ")){
+                    genreList = genreList.substring(0, genreList.length - 2)
+                }
+                Text(
+                    text = "Genre(s): $genreList", // Utilisez l'interpolation de chaîne
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onBackground
+                    ),
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
 
                 // Description du jeu
                 Text(
-                    text = decodeHtml(gameDetails.description.toString()) ?: "No description available",
+                    text = ("Description: \n" + decodeHtml(gameDetails.description.toString()))
+                        ?: "No description available",
                     style = MaterialTheme.typography.bodyMedium.copy(
                         color = MaterialTheme.colorScheme.onBackground
                     ),
@@ -84,25 +155,7 @@ fun GameDetailsScreen(gameId: Int, modifier: Modifier = Modifier) {
                         .fillMaxWidth()
                 )
 
-                // Espacement entre la description et la section de détails
-                Spacer(modifier = Modifier.height(16.dp))
 
-                // Exemple d'ajout d'informations supplémentaires, comme la date de sortie
-                Text(
-                    text = "Released: ${gameDetails.released}",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.onBackground
-                    ),
-                    modifier = Modifier.padding(bottom = 4.dp)
-                )
-
-                Text(
-                    text = "Metacritic Score: ${gameDetails.metacritic}",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.onBackground
-                    ),
-                    modifier = Modifier.padding(bottom = 4.dp)
-                )
 
                 // Espacement avant de finir
                 Spacer(modifier = Modifier.height(16.dp))
@@ -121,7 +174,7 @@ fun decodeHtml(html: String): String {
 
 
 
-@Preview(showBackground = true)
+@Preview
 @Composable
 fun PreviewGameDetailsScreen() {
     val sampleGameDetails = GameDetails(

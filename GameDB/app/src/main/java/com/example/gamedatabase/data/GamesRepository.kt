@@ -20,8 +20,8 @@ class NetworkGamesRepository(private val rawgApiService: RAWGApiService) : Games
         return rawgApiService.getGames(query, page).results
     }
 
-    override suspend fun getGameDetails(gameId: Int, query: String): GameDetails {
-        return  rawgApiService.getGameDetails(gameId, query)
+    override suspend fun getGameDetails(id: Int, query: String): GameDetails {
+        return  rawgApiService.getGameDetails(id, query)
     }
 
     override suspend fun getGameSearch(key: String, query: String): List<GamesInList> {

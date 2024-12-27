@@ -50,29 +50,6 @@ class CombinedViewModel(val gamesRepository: GamesRepository) : ViewModel() {
         loggedInUserId = userId
     }
 
-//    fun addGameToFavorites(gameId: Int, userRepository: UserRepository) {
-//        Log.d("CombinedViewModel", "LoggedInUserId: $loggedInUserId")
-//        loggedInUserId?.let { userId ->
-//            viewModelScope.launch {
-//                val user = userRepository.getUserById(userId)
-//                user?.let {
-//                    val currentFavorites = it.favGames.split(",").filter { it.isNotEmpty() }.toMutableList()
-//                    Log.d("FavoritesBefore", "Current Favorites: $currentFavorites")
-//                    if (!currentFavorites.contains(gameId.toString())) {
-//                        currentFavorites.add(gameId.toString())
-//                        val updatedFavorites = currentFavorites.joinToString(",")
-//                        Log.d("FavoritesAfter", "Updated Favorites: $updatedFavorites")
-//                        userRepository.updateFavGames(userId, updatedFavorites)
-//
-//                        // Vérifiez la mise à jour
-//                        val updatedUser = userRepository.getUserById(userId)
-//                        Log.d("CheckFavorites", "Favorites in DB: ${updatedUser?.favGames}")
-//                    }
-//                } ?: Log.e("ToggleGameToFavorites", "User not found")
-//            }
-//        } ?: Log.e("ToggleGameToFavorites", "No logged-in user")
-//    }
-
     private val _favoriteStates = mutableStateMapOf<Int, Boolean>()
     val favoriteStates: Map<Int, Boolean> get() = _favoriteStates
 
