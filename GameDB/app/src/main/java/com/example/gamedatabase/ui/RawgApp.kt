@@ -49,6 +49,7 @@ import com.example.gamedatabase.ui.screens.FavoritesScreen
 import com.example.gamedatabase.ui.screens.GameDetailsScreen
 import com.example.gamedatabase.ui.screens.LoginScreen
 import com.example.gamedatabase.ui.screens.RandomGameDetailsScreenWithShake
+import com.example.gamedatabase.ui.screens.SignUpScreen
 import kotlinx.coroutines.launch
 
 
@@ -98,7 +99,16 @@ fun RawgApp() {
             composable("login") {
                 LoginScreen(
                     onLoginSuccess = { navController.navigate("home") { popUpTo("login") { inclusive = true } } },
-                    onSignUp = { /* Implémenter un écran d'inscription si nécessaire */ },
+                    onSignUp = { navController.navigate("signUp") },
+                    userRepository = userRepository,
+                    rawgViewModel = rawgViewModel
+                )
+            }
+            //Sign Up screen
+            composable("signUp") {
+                SignUpScreen(
+                    onSignUpSuccess = { navController.navigate("login")},
+                    onSignIn = {navController.navigate("login")},
                     userRepository = userRepository,
                     rawgViewModel = rawgViewModel
                 )

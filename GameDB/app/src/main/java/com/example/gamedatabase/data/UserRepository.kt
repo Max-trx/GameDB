@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
  */
 interface UserRepository {
     fun getAllUsers(): Flow<List<User>>
+    suspend fun setNewUser(user: User)
     suspend fun getUserById(userId: Int): User?
     suspend fun updateFavGames(userId: Int, favGames: String)
 }

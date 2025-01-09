@@ -51,6 +51,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -60,7 +61,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.gamedatabase.R
+import com.example.gamedatabase.data.AppDatabase
 import com.example.gamedatabase.data.GamesRepository
+import com.example.gamedatabase.data.OfflineUserRepository
+import com.example.gamedatabase.data.UserRepository
 import com.example.gamedatabase.model.GamesInList
 import com.example.gamedatabase.model.Platform
 import com.example.gamedatabase.model.PlatformSpec
@@ -379,7 +383,9 @@ fun GamesListScreen(
 @Composable
 fun GameCardItem(game: GamesInList, modifier: Modifier = Modifier, onClick: () -> Unit,
                  onFavoriteClick: (Int) -> Unit, rawgViewModel: CombinedViewModel) {
-    val isFavorite = rawgViewModel.favoriteStates[game.id] ?: false
+    val userRepository: UserRepository = OfflineUserRepository(AppDatabase.getDatabase(LocalContext.current).userDao())
+    rawgViewModel.checkGameInFavorites(game.id, userRepository)
+    val isFavorite = rawgViewModel.favoriteStates[game.id]
     Card(
         modifier = modifier.clickable(onClick = onClick), // Gestion du clic
         shape = RoundedCornerShape(12.dp),
@@ -482,7 +488,6 @@ fun GameCardItem(game: GamesInList, modifier: Modifier = Modifier, onClick: () -
                         .weight(1f)
                 )
 
-                //Row(verticalAlignment = Alignment.CenterVertically) {
                 val grade: String = if (game.metacritic == null){
                     "--"
                 } else{
@@ -494,7 +499,7 @@ fun GameCardItem(game: GamesInList, modifier: Modifier = Modifier, onClick: () -
                     textAlign = TextAlign.End
                 )
                 IconButton(onClick = { onFavoriteClick(game.id) }) {
-                    if (isFavorite){
+                    if (isFavorite == true){
                         Icon(
                             painter = painterResource(R.drawable.star_full_yellow),
                             contentDescription = "Add to Favorites",
@@ -509,7 +514,6 @@ fun GameCardItem(game: GamesInList, modifier: Modifier = Modifier, onClick: () -
                         )
                     }
                 }
-                //}
             }
         }
     }

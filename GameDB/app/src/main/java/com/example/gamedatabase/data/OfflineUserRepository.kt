@@ -14,4 +14,7 @@ class OfflineUserRepository(private val userDao: UserDao) : UserRepository {
         userDao.updateFavGames(userId, favGames)
         Log.d("UserDao", "Update completed")
     }
+    override suspend fun setNewUser(user: User) {
+        userDao.setNewUser(user)
+    }
 }

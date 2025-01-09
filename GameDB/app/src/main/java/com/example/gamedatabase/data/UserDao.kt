@@ -24,4 +24,7 @@ interface UserDao {
     @Query("UPDATE users SET fav_games = :favGames WHERE id = :userId")
     suspend fun updateFavGames(userId: Int, favGames: String)
 
+    @Insert
+    suspend fun setNewUser(user: User)
+
 }

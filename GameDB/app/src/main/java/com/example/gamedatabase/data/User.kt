@@ -9,9 +9,9 @@ data class User(
     @PrimaryKey(autoGenerate = true)
     val id: Int,
     @ColumnInfo(name = "user_name")
-    val userName: String,
+    var userName: String,
     @ColumnInfo(name = "user_password")
-    val userPassword: String,
+    var userPassword: String,
     @ColumnInfo(name = "fav_games")
     val favGames: String
 )

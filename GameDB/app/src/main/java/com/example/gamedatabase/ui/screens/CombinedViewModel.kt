@@ -15,6 +15,7 @@ import com.example.gamedatabase.data.GamesRepository
 import com.example.gamedatabase.model.GameDetails
 import com.example.gamedatabase.model.GamesInList
 import com.example.gamedatabase.RawgApplication
+import com.example.gamedatabase.data.User
 import com.example.gamedatabase.data.UserRepository
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
@@ -50,8 +51,32 @@ class CombinedViewModel(val gamesRepository: GamesRepository) : ViewModel() {
         loggedInUserId = userId
     }
 
+    suspend fun setNewUser(username: String, password: String, userRepository: UserRepository){
+        val newUser: User
+        newUser.userName = username
+        newUser.userPassword = password
+        userRepository.setNewUser(user)
+    }
+
     private val _favoriteStates = mutableStateMapOf<Int, Boolean>()
     val favoriteStates: Map<Int, Boolean> get() = _favoriteStates
+
+    fun checkGameInFavorites(gameId: Int, userRepository: UserRepository){
+        loggedInUserId?.let { userId ->
+            viewModelScope.launch {
+                val user = userRepository.getUserById(userId)
+                user?.let {
+                    val currentFavorites =
+                        it.favGames.split(",").filter { it.isNotEmpty() }.toMutableList()
+
+                    val updatedFavorite = currentFavorites.contains(gameId.toString())
+
+                    // Mettre à jour l'état observable
+                    _favoriteStates[gameId] = updatedFavorite
+                }
+            }
+        }
+    }
 
     fun toggleGameInFavorites(gameId: Int, userRepository: UserRepository) {
         loggedInUserId?.let { userId ->
