@@ -52,10 +52,8 @@ class CombinedViewModel(val gamesRepository: GamesRepository) : ViewModel() {
     }
 
     suspend fun setNewUser(username: String, password: String, userRepository: UserRepository){
-        val newUser: User
-        newUser.userName = username
-        newUser.userPassword = password
-        userRepository.setNewUser(user)
+        val newUser = User(userName = username, userPassword = password)
+        userRepository.setNewUser(newUser)
     }
 
     private val _favoriteStates = mutableStateMapOf<Int, Boolean>()

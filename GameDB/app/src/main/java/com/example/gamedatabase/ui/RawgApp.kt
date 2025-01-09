@@ -84,11 +84,22 @@ fun RawgApp() {
                             scope.launch {
                                 drawerState.close()
                             }
-                            navController.navigate("favoris") // Navigue vers l'accueil
+                            navController.navigate("favorite") // Navigue vers l'accueil
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Favoris", style = MaterialTheme.typography.bodyLarge)
+                        Text("Favorite", style = MaterialTheme.typography.bodyLarge)
+                    }
+                    TextButton(
+                        onClick = {
+                            scope.launch {
+                                drawerState.close()
+                            }
+                            navController.navigate("login") // Navigue vers login
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Logout", style = MaterialTheme.typography.bodyLarge)
                     }
                 }
             }
@@ -153,7 +164,7 @@ fun RawgApp() {
             }
 
             //Favorites
-            composable("favoris") {
+            composable("favorite") {
                 Scaffold(
                     topBar = {
                         RawgTopAppBarWithMenu(

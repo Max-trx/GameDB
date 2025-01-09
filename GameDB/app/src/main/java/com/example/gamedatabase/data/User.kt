@@ -7,11 +7,11 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "users")
 data class User(
     @PrimaryKey(autoGenerate = true)
-    val id: Int,
+    val id: Int = 0,
     @ColumnInfo(name = "user_name")
-    var userName: String,
+    var userName: String = "",
     @ColumnInfo(name = "user_password")
-    var userPassword: String,
+    var userPassword: String = "",
     @ColumnInfo(name = "fav_games")
-    val favGames: String
+    val favGames: String = ""
 )

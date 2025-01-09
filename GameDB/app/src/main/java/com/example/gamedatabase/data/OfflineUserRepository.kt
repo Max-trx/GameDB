@@ -16,5 +16,6 @@ class OfflineUserRepository(private val userDao: UserDao) : UserRepository {
     }
     override suspend fun setNewUser(user: User) {
         userDao.setNewUser(user)
+        Log.d("UserDao" , "Account created")
     }
 }
