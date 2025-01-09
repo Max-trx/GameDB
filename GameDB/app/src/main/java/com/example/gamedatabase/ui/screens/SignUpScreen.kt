@@ -37,6 +37,7 @@ fun SignUpScreen(
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var loginError by remember { mutableStateOf(false) }
+    var showDialog by remember { mutableStateOf(false) } // État pour la boîte de dialogue
 
     val coroutineScope = rememberCoroutineScope() // Créer un scope pour les coroutines
 
@@ -67,12 +68,17 @@ fun SignUpScreen(
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = {
             coroutineScope.launch {
-                rawgViewModel.setNewUser(username, password, userRepository)
+                try {
+                    rawgViewModel.setNewUser(username, password, userRepository)
+                    showDialog = true // Affiche la boîte de dialogue après succès
+                } catch (e: Exception) {
+                    Log.e("SignUp", "Error signing up: ${e.message}")
+                    loginError = true
+                }
             }
         }) {
             Text("Sign Up")
         }
-
 
         Spacer(modifier = Modifier.height(8.dp))
         TextButton(onClick = onSignIn) {
@@ -87,4 +93,22 @@ fun SignUpScreen(
             )
         }
     }
+
+    // Boîte de dialogue pour confirmer l'ajout de l'utilisateur
+    if (showDialog) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showDialog = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDialog = false
+                    onSignIn() // Navigue vers l'écran de connexion
+                }) {
+                    Text("OK")
+                }
+            },
+            title = { Text("User Created") },
+            text = { Text("Your account has been successfully created.") }
+        )
+    }
 }
+

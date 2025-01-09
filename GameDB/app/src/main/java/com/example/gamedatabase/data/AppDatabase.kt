@@ -12,16 +12,27 @@ abstract class AppDatabase : RoomDatabase() {
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
-
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
-                Room.databaseBuilder(
-                    context,
-                    AppDatabase::class.java,
-                    "user_database"
-                )
-                    .createFromAsset("databases/users.db")
-                    .fallbackToDestructiveMigration()
+                val databaseFile = context.getDatabasePath("user_database")
+                val builder = if (databaseFile.exists()) {
+                    // Base de données existante, ne pas recréer
+                    Room.databaseBuilder(
+                        context,
+                        AppDatabase::class.java,
+                        "user_database"
+                    )
+                } else {
+                    // Première initialisation à partir d'un fichier dans assets
+                    Room.databaseBuilder(
+                        context,
+                        AppDatabase::class.java,
+                        "user_database"
+                    )
+                        .createFromAsset("databases/users.db")
+                }
+
+                builder.fallbackToDestructiveMigration()
                     .build()
                     .also { INSTANCE = it }
             }
